@@ -1,0 +1,135 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+/* ═══════════════════════════════════════════════════
+   ONENESS Dine — Design Tokens
+   Single source of truth for all colors & variables
+   Dark mode = :root  |  Light mode = [data-theme="light"]
+═══════════════════════════════════════════════════ */
+
+/* ── DARK MODE (default) ── */
+:root {
+  --bg:    #0d0f14;
+  --bg2:   #141720;
+  --bg3:   #1c202c;
+  --bg4:   #232839;
+
+  --accent:  #f59e0b;
+  --accent2: #10b981;
+  --accent3: #3b82f6;
+  --accent4: #ef4444;
+  --accent5: #8b5cf6;
+
+  --text:  #f0f0f0;
+  --text2: #9ca3af;
+  --text3: #6b7280;
+
+  --border:  #2a2f42;
+  --border2: #363c52;
+
+  /* Sidebar */
+  --sidebar-bg:         #141720;
+  --sidebar-border:     #2a2f42;
+  --sidebar-icon:       #9ca3af;
+  --sidebar-icon-hover: #f0f0f0;
+  --sidebar-hover-bg:   #1c202c;
+  --sidebar-active-bg:  rgba(245,158,11,0.15);
+  --sidebar-active:     #f59e0b;
+  --logo-text:          #000000;
+
+  /* Topbar */
+  --topbar-bg:     #141720;
+  --topbar-border: #2a2f42;
+
+  /* Table card states */
+  --tbl-occ-bg:  rgba(245,158,11,.05);
+  --tbl-occ-bd:  rgba(245,158,11,.4);
+  --tbl-free-bg: rgba(16,185,129,.04);
+  --tbl-free-bd: rgba(16,185,129,.3);
+  --tbl-res-bg:  rgba(139,92,246,.04);
+  --tbl-res-bd:  rgba(139,92,246,.3);
+  --tbl-bil-bg:  rgba(239,68,68,.05);
+  --tbl-bil-bd:  rgba(239,68,68,.4);
+
+  /* Badges */
+  --badge-green-bg:  rgba(16,185,129,.15);
+  --badge-amber-bg:  rgba(245,158,11,.15);
+  --badge-red-bg:    rgba(239,68,68,.15);
+  --badge-blue-bg:   rgba(59,130,246,.15);
+  --badge-purple-bg: rgba(139,92,246,.15);
+
+  /* Misc */
+  --input-bg:        #1c202c;
+  --pay-selected-bg: rgba(245,158,11,.15);
+  --overlay-bg:      rgba(0,0,0,.72);
+  --toggle-track:    #363c52;
+  --shadow:          0 4px 24px rgba(0,0,0,.4);
+  --shadow-sm:       0 2px 8px rgba(0,0,0,.3);
+
+  /* Skeleton shimmer */
+  --skel-base:  #1c202c;
+  --skel-shine: #2a3050;
+}
+
+/* ── LIGHT MODE (Ivory Command) ── */
+[data-theme="light"] {
+  --bg:    #f5f3ee;
+  --bg2:   #ffffff;
+  --bg3:   #faf8f4;
+  --bg4:   #f0ede6;
+
+  --accent:  #d4820a;
+  --accent2: #1a7a4a;
+  --accent3: #2563c4;
+  --accent4: #c0392b;
+  --accent5: #6d3faa;
+
+  --text:  #1a1714;
+  --text2: #6b6258;
+  --text3: #9a9088;
+
+  --border:  #e8e2d8;
+  --border2: #d4ccc0;
+
+  /* Sidebar — warm ivory (light) */
+  --sidebar-bg:         #ede9e0;
+  --sidebar-border:     #d8d2c6;
+  --sidebar-icon:       #8a8070;
+  --sidebar-icon-hover: #1a1714;
+  --sidebar-hover-bg:   #ddd8ce;
+  --sidebar-active-bg:  rgba(212,130,10,.14);
+  --sidebar-active:     #b86e08;
+  --logo-text:          #ffffff;
+
+  /* Topbar */
+  --topbar-bg:     #ffffff;
+  --topbar-border: #e8e2d8;
+
+  /* Table card states */
+  --tbl-occ-bg:  rgba(212,130,10,.06);
+  --tbl-occ-bd:  rgba(212,130,10,.35);
+  --tbl-free-bg: rgba(26,122,74,.05);
+  --tbl-free-bd: rgba(26,122,74,.30);
+  --tbl-res-bg:  rgba(109,63,170,.05);
+  --tbl-res-bd:  rgba(109,63,170,.25);
+  --tbl-bil-bg:  rgba(192,57,43,.05);
+  --tbl-bil-bd:  rgba(192,57,43,.35);
+
+  /* Badges */
+  --badge-green-bg:  rgba(26,122,74,.12);
+  --badge-amber-bg:  rgba(212,130,10,.12);
+  --badge-red-bg:    rgba(192,57,43,.12);
+  --badge-blue-bg:   rgba(37,99,196,.12);
+  --badge-purple-bg: rgba(109,63,170,.12);
+
+  /* Misc */
+  --input-bg:        #f5f3ee;
+  --pay-selected-bg: rgba(212,130,10,.12);
+  --overlay-bg:      rgba(26,20,10,.6);
+  --toggle-track:    #d8d2c6;
+  --shadow:          0 4px 24px rgba(0,0,0,.10);
+  --shadow-sm:       0 2px 8px rgba(0,0,0,.07);
+
+  /* Skeleton shimmer — light version */
+  --skel-base:  #ede9e0;
+  --skel-shine: #faf8f4;
+}

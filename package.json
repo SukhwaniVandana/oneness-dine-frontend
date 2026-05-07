@@ -1,0 +1,71 @@
+{
+  "name": "oneness-dine-pos",
+  "version": "1.0.0",
+  "description": "ONENESS Dine — Restaurant POS | Part of ONENESS-ERP",
+  "private": true,
+  "main": "electron/main.js",
+
+  "scripts": {
+    "start":          "react-scripts start",
+    "build":          "react-scripts build",
+    "electron":       "electron .",
+    "electron:dev":   "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron:build": "npm run build && electron-builder"
+  },
+
+  "dependencies": {
+    "react":                          "^18.2.0",
+    "react-dom":                      "^18.2.0",
+    "react-router-dom":               "^6.22.0",
+    "axios":                          "^1.6.7",
+    "@tanstack/react-query":          "^5.24.1",
+    "@tanstack/react-query-devtools": "^5.24.1",
+    "react-scripts":                  "5.0.1"
+  },
+
+  "devDependencies": {
+    "electron":         "^29.1.0",
+    "electron-builder": "^24.13.3",
+    "concurrently":     "^8.2.2",
+    "wait-on":          "^7.2.0"
+  },
+
+  "homepage": "./",
+
+  "build": {
+    "appId":       "com.oneness.dine",
+    "productName": "ONENESS Dine",
+    "copyright":   "© 2025 ONENESS-ERP | Diet Delight Restaurant, Kolhapur",
+
+    "directories": { "output": "dist" },
+
+    "files": [
+      "build/**/*",
+      "electron/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "public/icon.ico"
+    },
+
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut":    true,
+      "createStartMenuShortcut":  true,
+      "shortcutName":             "ONENESS Dine"
+    },
+
+    "publish": null
+  },
+
+  "proxy": "http://localhost:8080",
+
+  "browserslist": {
+    "production": [">0.2%", "not dead", "not op_mini all"],
+    "development": ["last 1 chrome version", "last 1 firefox version"]
+  }
+}

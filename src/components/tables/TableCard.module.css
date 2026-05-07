@@ -1,0 +1,106 @@
+.card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.2s, background 0.2s;
+  position: relative;
+  overflow: hidden;
+  animation: fadeIn 0.2s ease forwards;
+  outline: none;
+}
+.card:hover  { transform: translateY(-2px); }
+.card:focus  { box-shadow: 0 0 0 2px var(--accent); }
+.card:active { transform: scale(0.98); }
+
+/* ── Status backgrounds ── */
+.occupied { border-color: var(--tbl-occ-bd); background: var(--tbl-occ-bg); }
+.free     { border-color: var(--tbl-free-bd); background: var(--tbl-free-bg); }
+.reserved { border-color: var(--tbl-res-bd);  background: var(--tbl-res-bg); }
+.billing  { border-color: var(--tbl-bil-bd);  background: var(--tbl-bil-bg); }
+
+/* ── Status dot ── */
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+.dotAmber  { background: var(--accent); }
+.dotGreen  { background: var(--accent2); }
+.dotPurple { background: var(--accent5); }
+.dotRed    { background: var(--accent4); box-shadow: 0 0 5px rgba(239,68,68,.4); }
+
+/* ── Table number ── */
+.tableNum {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 18px);
+}
+.numOccupied { color: var(--text); }
+.numFree     { color: var(--accent2); }
+.numReserved { color: var(--accent5); }
+.numBilling  { color: var(--accent4); }
+
+/* ── Labels ── */
+.tableLabel {
+  font-size: 10px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+/* ── Timer ── */
+.timer {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 10px;
+  display: block;
+  font-variant-numeric: tabular-nums;
+}
+.timerAmber  { color: var(--accent); }
+.timerRed    { color: var(--accent4); }
+.timerPurple {
+  font-size: 12px;
+  color: var(--accent5);
+  margin-top: 8px;
+}
+
+/* ── Covers + Waiter ── */
+.covers {
+  font-size: 11px;
+  color: var(--text2);
+  margin-top: 4px;
+}
+
+.waiter {
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Amount ── */
+.amount {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-top: 4px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
