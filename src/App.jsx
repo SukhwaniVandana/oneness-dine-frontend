@@ -1,15 +1,17 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
-import { ThemeProvider } from './context/ThemeContext';
-import { ToastProvider } from './components/common/Toast';
-import { ErrorBoundary } from './components/common/ErrorHandler';
-import AppLayout from './components/layout/AppLayout';
+import { ThemeProvider }  from './context/ThemeContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider }  from './components/common/Toast';
+import { ErrorBoundary }  from './components/common/ErrorHandler';
+import AppLayout          from './components/layout/AppLayout';
 
-import TablesDashboard from './pages/TablesDashboard';
+import Login             from './pages/Login';
+import TablesDashboard   from './pages/TablesDashboard';
 
-/* ── Placeholder pages (to be built screen by screen) ── */
+/* ── Placeholder for screens not yet built ── */
 const Placeholder = ({ name }) => (
   <div style={{
     display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -28,6 +30,22 @@ const Placeholder = ({ name }) => (
   </div>
 );
 
+/* ── Protected Route — redirects to /login if not authenticated ── */
+function ProtectedRoute() {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated
+    ? <AppLayout><Outlet /></AppLayout>
+    : <Navigate to="/login" replace />;
+}
+
+/* ── Public Route — redirects to /tables if already logged in ── */
+function PublicRoute({ children }) {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated
+    ? <Navigate to="/tables" replace />
+    : children;
+}
+
 /* ── React Query global config ── */
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,28 +62,38 @@ export default function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
-          <ToastProvider>
-            <BrowserRouter>
-              <Routes>
-                {/* Default → Tables */}
-                <Route path="/" element={<Navigate to="/tables" replace />} />
+          <AuthProvider>
+            <ToastProvider>
+              <BrowserRouter>
+                <Routes>
+                  {/* Default → Login */}
+                  <Route path="/" element={<Navigate to="/login" replace />} />
 
-                {/* All screens inside AppLayout (sidebar + topbar) */}
-                <Route element={<AppLayout><Outlet /></AppLayout>}>
-                  <Route path="/tables"  element={<TablesDashboard />} />
-                  <Route path="/order"   element={<Placeholder name="Order Taking" />} />
-                  <Route path="/kot"     element={<Placeholder name="Kitchen Display (KOT)" />} />
-                  <Route path="/billing" element={<Placeholder name="Billing" />} />
-                  <Route path="/reports" element={<Placeholder name="Reports Dashboard" />} />
-                  <Route path="/admin"   element={<Placeholder name="Admin Panel" />} />
-                </Route>
+                  {/* Public — Login */}
+                  <Route path="/login" element={
+                    <PublicRoute>
+                      <Login />
+                    </PublicRoute>
+                  } />
 
-                {/* 404 */}
-                <Route path="*" element={<Navigate to="/tables" replace />} />
-              </Routes>
-            </BrowserRouter>
-          </ToastProvider>
+                  {/* Protected — all app screens */}
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/tables"  element={<TablesDashboard />} />
+                    <Route path="/order"   element={<Placeholder name="Order Taking" />} />
+                    <Route path="/kot"     element={<Placeholder name="Kitchen Display (KOT)" />} />
+                    <Route path="/billing" element={<Placeholder name="Billing" />} />
+                    <Route path="/reports" element={<Placeholder name="Reports Dashboard" />} />
+                    <Route path="/admin"   element={<Placeholder name="Admin Panel" />} />
+                  </Route>
+
+                  {/* 404 → Login */}
+                  <Route path="*" element={<Navigate to="/login" replace />} />
+                </Routes>
+              </BrowserRouter>
+            </ToastProvider>
+          </AuthProvider>
         </ThemeProvider>
+
         {process.env.NODE_ENV === 'development' && (
           <ReactQueryDevtools initialIsOpen={false} />
         )}
@@ -73,5 +101,3 @@ export default function App() {
     </ErrorBoundary>
   );
 }
-
-import { Outlet } from 'react-router-dom';
