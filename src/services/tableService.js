@@ -1,40 +1,31 @@
 import apiClient from './apiClient';
 
-/* ─────────────────────────────────────────────
-   Table Service
-   Maps to: /api/tables  (TableController.java)
-   Endpoints from your ONENESS Dine backend
-───────────────────────────────────────────── */
-
+/* ─────────────────────────────────────────────────────
+   Table Service — mapped to ONENESS Dine backend
+───────────────────────────────────────────────────── */
 const TableService = {
 
-  /* GET /api/tables — all tables for a branch */
+  /* GET /api/v1/tables/dashboard?branchId=1
+     Returns TableDashboardDto[] with activeOrders[] per table
+     USE THIS instead of /tables for the dashboard — richer data */
+  getDashboard: (branchId) =>
+    apiClient.get('/tables/dashboard', { params: { branchId } }),
+
+  /* GET /api/v1/tables?branchId=1 */
   getAllTables: (branchId) =>
     apiClient.get('/tables', { params: { branchId } }),
 
-  /* GET /api/tables/{id} — single table details */
+  /* GET /api/v1/tables/{id} */
   getTableById: (tableId) =>
     apiClient.get(`/tables/${tableId}`),
 
-  /* GET /api/tables/active-sessions — occupied tables with session info */
-  getActiveSessions: (branchId) =>
-    apiClient.get('/tables/active-sessions', { params: { branchId } }),
+  /* PUT /api/v1/tables/{id}/lock — lock table */
+  lockTable: (tableId) =>
+    apiClient.post(`/tables/${tableId}/lock`),
 
-  /* POST /api/tables/{id}/open-session — open table, start timer */
-  openSession: (tableId, payload) =>
-    apiClient.post(`/tables/${tableId}/open-session`, payload),
-
-  /* POST /api/tables/{id}/close-session — close after billing */
-  closeSession: (tableId) =>
-    apiClient.post(`/tables/${tableId}/close-session`),
-
-  /* PUT /api/tables/{id}/status — update status (FREE/OCCUPIED/RESERVED/BILLING) */
-  updateStatus: (tableId, status) =>
-    apiClient.put(`/tables/${tableId}/status`, { status }),
-
-  /* GET /api/tables — count by status for dashboard header */
-  getSummary: (branchId) =>
-    apiClient.get('/tables', { params: { branchId } }),
+  /* DELETE /api/v1/tables/{id}/lock — unlock table */
+  unlockTable: (tableId) =>
+    apiClient.delete(`/tables/${tableId}/lock`),
 };
 
 export default TableService;

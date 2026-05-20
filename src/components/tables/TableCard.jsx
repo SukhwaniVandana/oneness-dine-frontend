@@ -1,101 +1,106 @@
 import SessionTimer from '../common/SessionTimer';
 import styles from './TableCard.module.css';
 
-/**
- * TableCard
- *
- * Real API fields (from backend response):
- *   table.id
- *   table.tableNumber     — e.g. "Table-1"
- *   table.tableStatus     — "FREE" | "OCCUPIED" | "RESERVED" | "BILLING"
- *                           (normalized from "AVAILABLE" by useTables hook)
- *   table.capacity        — number of covers
- *   table.sectionName     — e.g. "Hall"
- *   table.sessionStartedAt — ISO string, present when OCCUPIED/BILLING
- *   table.runningAmount   — number, present when OCCUPIED/BILLING
- *   table.waiterName      — assigned waiter, nullable
- */
+/*
+  COLOR STATES — all via CSS variables (tokens.css):
+  TEAL   = AVAILABLE  — "Green signal, seat new group"
+  AMBER  = OCCUPIED   — "Busy, people eating/ordering"
+  BLUE   = BILL READY — "Bill generated, collect payment"
+  PURPLE = RESERVED
+*/
+const EATING_STATUSES = ['KOT_SENT', 'IN_PROGRESS', 'READY', 'SERVED'];
+
 export default function TableCard({ table, onClick }) {
-  const status = (table.tableStatus || 'FREE').toUpperCase();
+  const status       = (table.tableStatus || 'FREE').toUpperCase();
+  const activeOrders = (table.activeOrders || []).filter(o => !o.isSettled);
 
-  const statusLabel = {
-    OCCUPIED: 'Occupied',
-    FREE:     'Available',
-    RESERVED: 'Reserved',
-    BILLING:  'Billing',
-  }[status] || status;
+  const eatingOrders = activeOrders.filter(o => EATING_STATUSES.includes(o.orderStatus));
+  const allBilled    = activeOrders.length > 0
+                       && eatingOrders.length === 0
+                       && activeOrders.every(o => o.orderStatus === 'BILLED');
+  const sessionCount = activeOrders.length;
 
-  const dotClass = {
-    OCCUPIED: styles.dotAmber,
-    FREE:     styles.dotGreen,
-    RESERVED: styles.dotPurple,
-    BILLING:  styles.dotRed,
-  }[status] || styles.dotGreen;
+  const earliest = [...activeOrders]
+    .sort((a, b) => new Date(a.sessionStartedAt) - new Date(b.sessionStartedAt))[0];
 
-  const numClass = {
-    OCCUPIED: styles.numOccupied,
-    FREE:     styles.numFree,
-    RESERVED: styles.numReserved,
-    BILLING:  styles.numBilling,
-  }[status] || styles.numFree;
+  const isBilled   = status === 'OCCUPIED' && allBilled;
+  const isOccupied = status === 'OCCUPIED' && !allBilled;
+  const isFree     = status === 'FREE' || status === 'AVAILABLE';
+  const isReserved = status === 'RESERVED';
 
-  const timerClass = status === 'BILLING' ? styles.timerRed : styles.timerAmber;
+  /* CSS classes — use variables only, no hardcoded colors */
+  const cardClass  = isBilled   ? styles.billed   :
+                     isOccupied ? styles.occupied  :
+                     isReserved ? styles.reserved  :
+                     isFree     ? styles.free      : styles.blocked;
+
+  const dotClass   = isBilled   ? styles.dotBlue   :
+                     isOccupied ? styles.dotAmber   :
+                     isReserved ? styles.dotPurple  :
+                     isFree     ? styles.dotTeal    : styles.dotGrey;
+
+  /* Text colors — from CSS variables per state */
+  const numColor   = isBilled   ? 'var(--tbl-bill-text)' :
+                     isOccupied ? 'var(--tbl-occ-text)'  :
+                     isReserved ? 'var(--tbl-res-text)'  :
+                     isFree     ? 'var(--tbl-free-text)' : 'var(--text2)';
+
+  const labelColor = 'var(--text3)';
+  const timerColor = isBilled ? 'var(--tbl-bill-text)' : 'var(--tbl-occ-text)';
+  const subColor   = isBilled   ? 'var(--tbl-bill-text)' :
+                     isOccupied ? 'var(--tbl-occ-text)'  :
+                     isReserved ? 'var(--tbl-res-text)'  :
+                     isFree     ? 'var(--tbl-free-text)' : 'var(--text3)';
+
+  const stateLabel = isBilled   ? 'Bill Ready' :
+                     isOccupied ? 'Occupied'   :
+                     isReserved ? 'Reserved'   :
+                     isFree     ? 'Available'  : status;
 
   return (
     <div
-      className={`${styles.card} ${styles[status.toLowerCase()]}`}
+      className={`${styles.card} ${cardClass}`}
       onClick={onClick}
       role="button"
       tabIndex={0}
       onKeyDown={e => e.key === 'Enter' && onClick?.()}
-      aria-label={`${table.tableNumber}, ${statusLabel}`}
+      aria-label={`${table.tableNumber}, ${stateLabel}`}
     >
-      {/* Status dot */}
       <span className={`${styles.dot} ${dotClass}`} />
 
-      {/* Table number */}
-      <div className={`${styles.tableNum} ${numClass}`}>
+      {sessionCount > 1 && (
+        <span className={styles.sessionBadge}>{sessionCount}</span>
+      )}
+
+      <div className={styles.tableNum} style={{ color: numColor }}>
         {table.tableNumber}
       </div>
 
-      {/* Section name */}
-      <div className={styles.tableLabel}>
-        {table.sectionName || statusLabel}
+      <div className={styles.tableLabel} style={{ color: labelColor }}>
+        {stateLabel}
       </div>
 
-      {/* Live session timer — OCCUPIED or BILLING */}
-      {(status === 'OCCUPIED' || status === 'BILLING') && table.sessionStartedAt && (
+      {(isOccupied || isBilled) && earliest?.sessionStartedAt && (
         <SessionTimer
-          startedAt={table.sessionStartedAt}
-          className={`${styles.timer} ${timerClass}`}
+          startedAt={earliest.sessionStartedAt}
+          className={styles.timer}
+          style={{ color: timerColor }}
         />
       )}
 
-      {/* Static status label when no timer */}
-      {(status === 'OCCUPIED' || status === 'BILLING') && !table.sessionStartedAt && (
-        <div className={`${styles.timer} ${timerClass}`}>{statusLabel}</div>
-      )}
-
-      {/* Reserved time */}
-      {status === 'RESERVED' && table.reservedAt && (
-        <div className={styles.timerPurple}>📅 {table.reservedAt}</div>
-      )}
-
-      {/* Capacity */}
-      <div className={styles.covers}>
+      <div className={styles.covers} style={{ color: subColor }}>
         👥 {table.capacity ?? '—'} covers
+        {earliest?.paxCount ? ` · ${earliest.paxCount} seated` : ''}
       </div>
 
-      {/* Waiter name if assigned */}
-      {table.waiterName && (
-        <div className={styles.waiter}>👤 {table.waiterName}</div>
+      {earliest?.itemCount > 0 && (
+        <div className={styles.itemCount} style={{ color: subColor }}>
+          🍽️ {earliest.itemCount} items
+        </div>
       )}
 
-      {/* Running amount */}
-      {table.runningAmount != null && table.runningAmount > 0 && (
-        <div className={styles.amount}>
-          ₹ {Number(table.runningAmount).toLocaleString('en-IN')}
-        </div>
+      {isBilled && (
+        <span className={styles.payBadge}>🧾 Pay now</span>
       )}
     </div>
   );

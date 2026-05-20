@@ -1,92 +1,42 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import TableService from '../services/tableService';
+import { useAuth } from '../context/AuthContext';
 
-const BRANCH_ID = 1; // TODO: get from auth context after login
-
-/* ─────────────────────────────────────────────────────────
-   STATUS NORMALIZER
-   Backend returns "AVAILABLE" — we normalize to "FREE"
-   so the rest of the UI uses consistent values.
-   Backend → Frontend mapping:
-     AVAILABLE  → FREE
-     OCCUPIED   → OCCUPIED
-     RESERVED   → RESERVED
-     BILLING    → BILLING
-───────────────────────────────────────────────────────── */
-function normalizeStatus(status) {
-  if (!status) return 'FREE';
-  if (status === 'AVAILABLE') return 'FREE';
-  return status.toUpperCase();
-}
-
-function normalizeTables(tables) {
-  if (!Array.isArray(tables)) return [];
-  return tables.map(t => ({
+/* ─────────────────────────────────────────────────────
+   useTables — uses /tables/dashboard which returns
+   richer data including activeOrders[] per table
+   tableStatus values: AVAILABLE|OCCUPIED|RESERVED|MERGED|BLOCKED
+   We normalize AVAILABLE → FREE for consistency in UI
+───────────────────────────────────────────────────── */
+function normalizeTable(t) {
+  return {
     ...t,
-    tableStatus: normalizeStatus(t.tableStatus),
-  }));
+    id:          t.tableId || t.id,
+    tableStatus: t.tableStatus === 'AVAILABLE' ? 'FREE' : (t.tableStatus || 'FREE'),
+    // activeOrders[] is already in the response from dashboard endpoint
+    activeOrders: t.activeOrders || [],
+  };
 }
 
-/* ─────────────────────────────────────────────────────────
-   useTables
-   Response shape: { success: true, data: [...], timestamp }
-   We unwrap: r.data?.data  (axios wraps in r.data, then
-   our backend wraps in { data: [...] })
-───────────────────────────────────────────────────────── */
 export function useTables() {
+  const { session } = useAuth();
+  const branchId = session?.branchId || 1;
+
   return useQuery({
-    queryKey: ['tables', BRANCH_ID],
+    queryKey: ['tables', branchId],
     queryFn: () =>
-      TableService.getAllTables(BRANCH_ID)
-        .then(r => normalizeTables(r.data?.data ?? r.data ?? [])),
+      TableService.getDashboard(branchId)
+        .then(r => (r.data?.data ?? r.data ?? []).map(normalizeTable)),
     refetchInterval: 30_000,
     staleTime: 20_000,
     retry: 2,
   });
 }
 
-/* ─────────────────────────────────────────────────────────
-   useTableSummary
-   Derives counts from useTables cache if no summary endpoint
-───────────────────────────────────────────────────────── */
-export function useTableSummary() {
-  return useQuery({
-    queryKey: ['tables-summary', BRANCH_ID],
-    queryFn: () =>
-      TableService.getSummary(BRANCH_ID)
-        .then(r => r.data?.data ?? r.data)
-        .catch(() => null),   // summary endpoint may not exist yet — fail silently
-    refetchInterval: 30_000,
-    staleTime: 20_000,
-    retry: 1,
-  });
-}
-
-/* ─────────────────────────────────────────────────────────
-   useOpenSession
-───────────────────────────────────────────────────────── */
-export function useOpenSession() {
+/* Fallback: invalidate tables after mutations */
+export function useInvalidateTables() {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ tableId, covers }) =>
-      TableService.openSession(tableId, { covers }).then(r => r.data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tables'] });
-      queryClient.invalidateQueries({ queryKey: ['tables-summary'] });
-    },
-  });
-}
-
-/* ─────────────────────────────────────────────────────────
-   useUpdateTableStatus
-───────────────────────────────────────────────────────── */
-export function useUpdateTableStatus() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ tableId, status }) =>
-      TableService.updateStatus(tableId, status).then(r => r.data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tables'] });
-    },
-  });
+  const { session } = useAuth();
+  const branchId = session?.branchId || 1;
+  return () => queryClient.invalidateQueries({ queryKey: ['tables', branchId] });
 }

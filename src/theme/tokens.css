@@ -41,14 +41,19 @@
   --topbar-border: #2a2f42;
 
   /* Table card states */
-  --tbl-occ-bg:  rgba(245,158,11,.05);
+  --tbl-occ-bg:  rgba(245,158,11,.05);   /* OCCUPIED  — amber  */
   --tbl-occ-bd:  rgba(245,158,11,.4);
-  --tbl-free-bg: rgba(16,185,129,.04);
-  --tbl-free-bd: rgba(16,185,129,.3);
-  --tbl-res-bg:  rgba(139,92,246,.04);
+  --tbl-free-bg: rgba(16,185,129,.05);   /* AVAILABLE — teal   */
+  --tbl-free-bd: rgba(16,185,129,.35);
+  --tbl-res-bg:  rgba(139,92,246,.04);   /* RESERVED  — purple */
   --tbl-res-bd:  rgba(139,92,246,.3);
-  --tbl-bil-bg:  rgba(239,68,68,.05);
-  --tbl-bil-bd:  rgba(239,68,68,.4);
+  --tbl-bill-bg: rgba(59,130,246,.05);   /* BILL READY — blue  */
+  --tbl-bill-bd: rgba(59,130,246,.4);
+  /* text colors per state */
+  --tbl-occ-text:  #f59e0b;
+  --tbl-free-text: #10b981;
+  --tbl-res-text:  #8b5cf6;
+  --tbl-bill-text: #3b82f6;
 
   /* Badges */
   --badge-green-bg:  rgba(16,185,129,.15);
@@ -105,14 +110,19 @@
   --topbar-border: #e8e2d8;
 
   /* Table card states */
-  --tbl-occ-bg:  rgba(212,130,10,.06);
+  --tbl-occ-bg:  rgba(212,130,10,.06);   /* OCCUPIED  — amber  */
   --tbl-occ-bd:  rgba(212,130,10,.35);
-  --tbl-free-bg: rgba(26,122,74,.05);
-  --tbl-free-bd: rgba(26,122,74,.30);
-  --tbl-res-bg:  rgba(109,63,170,.05);
+  --tbl-free-bg: rgba(26,122,74,.06);    /* AVAILABLE — teal   */
+  --tbl-free-bd: rgba(26,122,74,.35);
+  --tbl-res-bg:  rgba(109,63,170,.05);   /* RESERVED  — purple */
   --tbl-res-bd:  rgba(109,63,170,.25);
-  --tbl-bil-bg:  rgba(192,57,43,.05);
-  --tbl-bil-bd:  rgba(192,57,43,.35);
+  --tbl-bill-bg: rgba(37,99,196,.06);    /* BILL READY — blue  */
+  --tbl-bill-bd: rgba(37,99,196,.4);
+  /* text colors per state */
+  --tbl-occ-text:  #d4820a;
+  --tbl-free-text: #1a7a4a;
+  --tbl-res-text:  #6d3faa;
+  --tbl-bill-text: #2563c4;
 
   /* Badges */
   --badge-green-bg:  rgba(26,122,74,.12);
