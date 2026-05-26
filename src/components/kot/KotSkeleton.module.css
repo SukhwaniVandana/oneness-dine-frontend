@@ -1,0 +1,21 @@
+.card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.header {
+  padding: 10px 14px;
+  background: var(--bg4);
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.tableNum { height: 20px; width: 70px; border-radius: 4px; }
+.label    { height: 10px; width: 90px; border-radius: 4px; margin-top: 6px; }
+.timer    { height: 16px; width: 44px; border-radius: 4px; }
+.items    { padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
+.item     { display: flex; gap: 8px; }
+.qty      { height: 14px; width: 28px; border-radius: 4px; }
+.name     { height: 14px; flex: 1; border-radius: 4px; }
+.btn      { height: 36px; width: 100%; border-radius: 0; }
