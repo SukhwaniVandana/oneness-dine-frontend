@@ -17,7 +17,7 @@
 /* Search */
 .searchWrap {
   position: relative;
-  padding: 10px 12px;
+  padding: 5px 12px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   background: var(--bg2);
@@ -27,8 +27,11 @@
 }
 
 .searchIcon {
-  font-size: 14px;
+  font-size: 20px;
   flex-shrink: 0;
+  opacity: 0.5;
+  cursor: default;
+  padding: 5px 0 0 0;
 }
 
 .searchInput {

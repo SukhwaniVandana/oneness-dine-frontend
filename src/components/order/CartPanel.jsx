@@ -3,13 +3,13 @@ import Spinner from '../common/Spinner';
 import styles from './CartPanel.module.css';
 
 const STATUS_COLORS = {
-  DRAFT:       'var(--text3)',
-  KOT_SENT:    'var(--accent)',
+  DRAFT: 'var(--text3)',
+  KOT_SENT: 'var(--accent)',
   IN_PROGRESS: 'var(--accent3)',
-  READY:       'var(--accent2)',
-  SERVED:      'var(--text3)',
-  CANCELLED:   'var(--accent4)',
-  BILLED:      'var(--accent2)',
+  READY: 'var(--accent2)',
+  SERVED: 'var(--text3)',
+  CANCELLED: 'var(--accent4)',
+  BILLED: 'var(--accent2)',
 };
 
 export default function CartPanel({
@@ -31,17 +31,19 @@ export default function CartPanel({
   loadingAction,
   paxCount,
   onPaxChange,
+  paxWarning,
+  tableCapacity
 }) {
   const hasNewItems = cart.length > 0;
   const hasExisting = (existingItems || []).filter(i => i.itemStatus !== 'CANCELLED').length > 0;
   const hasAnyItems = hasNewItems || hasExisting;
-  const isLoading   = !!loadingAction;
+  const isLoading = !!loadingAction;
   const activeExisting = (existingItems || []).filter(i => i.itemStatus !== 'CANCELLED');
 
   const newSubtotal = cart.reduce((s, c) => s + (Number(c.unitPrice) || 0) * (c.quantity || 0), 0);
   const existingSubtotal = activeExisting.reduce((s, i) => s + (Number(i.unitPrice) || 0) * (i.quantity || 0), 0);
   const grandTotal = newSubtotal + existingSubtotal;
-  const newQty     = cart.reduce((s, c) => s + c.quantity, 0);
+  const newQty = cart.reduce((s, c) => s + c.quantity, 0);
 
   return (
     <div className={styles.panel}>
@@ -63,8 +65,13 @@ export default function CartPanel({
         <div className={styles.paxWrap}>
           <span>👥</span>
           <button className={styles.paxBtn} onClick={() => onPaxChange(Math.max(1, paxCount - 1))}>−</button>
-          <span className={styles.paxNum}>{paxCount}</span>
+          <span className={`${styles.paxNum} ${paxWarning ? styles.paxOver : ''}`}>
+            {paxCount}
+          </span>
           <button className={styles.paxBtn} onClick={() => onPaxChange(paxCount + 1)}>+</button>
+          {paxWarning && (
+            <span className={styles.paxWarnIcon} title={`Exceeds table capacity (${tableCapacity})`}>⚠️</span>
+          )}
         </div>
       </div>
 
@@ -84,7 +91,7 @@ export default function CartPanel({
         {kotGroups && kotGroups.length > 0 ? (
           kotGroups.map((kot, idx) => {
             const kotItemIds = new Set((kot.items || []).map(ki => ki.orderItemId));
-            const kotItems   = activeExisting.filter(oi => kotItemIds.has(oi.id));
+            const kotItems = activeExisting.filter(oi => kotItemIds.has(oi.id));
             if (kotItems.length === 0) return null;
             return (
               <div key={kot.id || idx}>
@@ -183,7 +190,7 @@ export default function CartPanel({
 
 /* Existing (sent) item — read only */
 function ExistingRow({ item, onRemove }) {
-  const color     = STATUS_COLORS[item.itemStatus] || 'var(--text3)';
+  const color = STATUS_COLORS[item.itemStatus] || 'var(--text3)';
   const canRemove = !['BILLED', 'CANCELLED', 'SERVED'].includes(item.itemStatus);
   return (
     <div className={`${styles.row} ${styles.existRow}`}>

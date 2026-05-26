@@ -47,6 +47,7 @@ export default function OrderTaking() {
   const tableNumber     = decodeURIComponent(params.get('tableNumber') || 'Table');
   const forceNew        = params.get('newSession') === '1';
   const existingOrderId = params.get('orderId') ? Number(params.get('orderId')) : null;
+  const tableCapacity   = params.get('capacity') ? Number(params.get('capacity')) : null;
 
   /* Guard: no tableId → back to tables */
   if (!tableId || tableId === 'null' || tableId === '0') {
@@ -57,6 +58,7 @@ export default function OrderTaking() {
   const [activeCatId,   setActiveCatId]   = useState(null);
   const [cart,          setCart]          = useState([]);
   const [paxCount,      setPaxCount]      = useState(2);
+  const [paxWarning,    setPaxWarning]    = useState(false);
   const [loadingAction, setLoadingAction] = useState(null);
   const [searchQuery,   setSearchQuery]   = useState('');
   const [variantItem,   setVariantItem]   = useState(null);
@@ -350,14 +352,14 @@ export default function OrderTaking() {
 
       {/* LEFT: MENU */}
       <div className={styles.menuPanel}>
-        <div className={styles.searchBar}>
-          <span className={styles.searchIcon}>🔍</span>
+        <div className={styles.searchWrap}>
           <input className={styles.searchInput} placeholder="Search items..."
             value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
           {searchQuery && (
             <button className={styles.clearBtn} onClick={() => setSearchQuery('')}>✕</button>
           )}
-          <span className={styles.escHint}>ESC to go back</span>
+          <span className={styles.searchIcon}>🔍</span>
+          {/* <span className={styles.escHint}>ESC to go back</span>s */}
         </div>
 
         {catsLoading ? (
@@ -416,7 +418,12 @@ export default function OrderTaking() {
           canSettle={canSettle}
           loadingAction={loadingAction}
           paxCount={paxCount}
-          onPaxChange={setPaxCount}
+          onPaxChange={(n) => {
+              setPaxCount(n);
+              setPaxWarning(tableCapacity && n > tableCapacity);
+          }}
+          paxWarning={paxWarning}
+          tableCapacity={tableCapacity}
         />
       </div>
 

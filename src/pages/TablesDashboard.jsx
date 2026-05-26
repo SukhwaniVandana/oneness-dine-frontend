@@ -94,7 +94,7 @@ export default function TablesDashboard() {
 
     /* FREE / RESERVED → new session directly */
     if (status === 'FREE' || status === 'AVAILABLE' || status === 'RESERVED') {
-      navigate(`/order?tableId=${table.id}&tableNumber=${encodeURIComponent(table.tableNumber)}&newSession=1`);
+      navigate(`/order?tableId=${table.id}&tableNumber=${encodeURIComponent(table.tableNumber)}&capacity=${table.capacity || 0}&newSession=1`);
       return;
     }
 
@@ -105,13 +105,13 @@ export default function TablesDashboard() {
 
       /* No active orders → treat as free */
       if (unsettled.length === 0) {
-        navigate(`/order?tableId=${table.id}&tableNumber=${encodeURIComponent(table.tableNumber)}&newSession=1`);
+        navigate(`/order?tableId=${table.id}&tableNumber=${encodeURIComponent(table.tableNumber)}&capacity=${table.capacity || 0}&newSession=1`);
         return;
       }
 
       /* Exactly 1 eating order, no billed orders → go directly (people still ordering) */
       if (eatingOrders.length === 1 && billedOrders.length === 0) {
-        navigate(`/order?tableId=${table.id}&tableNumber=${encodeURIComponent(table.tableNumber)}&orderId=${eatingOrders[0].orderId}`);
+        navigate(`/order?tableId=${table.id}&tableNumber=${encodeURIComponent(table.tableNumber)}&capacity=${table.capacity || 0}&orderId=${eatingOrders[0].orderId}`);
         return;
       }
 
@@ -123,13 +123,13 @@ export default function TablesDashboard() {
   function handleAddToExisting(order) {
     const { table } = sessionDialog;
     setSessionDialog(null);
-    navigate(`/order?tableId=${table.id}&tableNumber=${encodeURIComponent(table.tableNumber)}&orderId=${order.orderId}`);
+    navigate(`/order?tableId=${table.id}&tableNumber=${encodeURIComponent(table.tableNumber)}&capacity=${table.capacity || 0}&orderId=${order.orderId}`);
   }
 
   function handleNewSession() {
     const { table } = sessionDialog;
     setSessionDialog(null);
-    navigate(`/order?tableId=${table.id}&tableNumber=${encodeURIComponent(table.tableNumber)}&newSession=1`);
+    navigate(`/order?tableId=${table.id}&tableNumber=${encodeURIComponent(table.tableNumber)}&capacity=${table.capacity || 0}&newSession=1`);
   }
 
   if (isError) {
