@@ -10,6 +10,7 @@ import Login           from './pages/Login';
 import TablesDashboard from './pages/TablesDashboard';
 import OrderTaking     from './pages/OrderTaking';
 import KotScreen   from './pages/KotScreen';
+import BillingScreen from './pages/BillingScreen';
 
 const Placeholder = ({ name }) => (
   <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%', flexDirection:'column', gap:'12px' }}>
@@ -48,7 +49,7 @@ export default function App() {
                     <Route path="/tables"  element={<TablesDashboard />} />
                     <Route path="/order"   element={<OrderTaking />} />
                     <Route path="/kot"     element={<KotScreen />} />
-                    <Route path="/billing" element={<Placeholder name="Billing" />} />
+                    <Route path="/billing" element={<BillingScreen />} />
                     <Route path="/reports" element={<Placeholder name="Reports Dashboard" />} />
                     <Route path="/admin"   element={<Placeholder name="Admin Panel" />} />
                   </Route>

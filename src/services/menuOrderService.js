@@ -50,4 +50,6 @@ export const BillService = {
   /* POST /api/v1/bills/{id}/void — void when new items added after billing */
   voidBill: (billId) =>
     apiClient.post(`/bills/${billId}/void`),
+  applyDiscount: (billId, payload) =>
+  apiClient.patch(`/bills/${billId}/discount`, payload),
 };
