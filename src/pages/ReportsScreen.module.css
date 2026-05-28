@@ -1,0 +1,129 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--bg2);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.headerLeft {}
+.title {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--accent);
+}
+
+/* Date controls */
+.dateControls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.quickBtns { display: flex; gap: 5px; }
+.quickBtn {
+  padding: 5px 11px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg4);
+  color: var(--text2);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.1s;
+  font-family: 'DM Sans', sans-serif;
+}
+.quickBtn:hover { border-color: var(--accent); color: var(--accent); }
+
+.dateRow { display: flex; align-items: center; gap: 6px; }
+.dateInput {
+  padding: 5px 9px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text);
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  cursor: pointer;
+}
+.dateInput:focus { border-color: var(--accent); }
+.dateSep { font-size: 12px; color: var(--text3); }
+
+/* Tabs row */
+.tabsRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.12s;
+  flex-shrink: 0;
+}
+.tab:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.tabActive {
+  background: var(--nav-active-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+.tabComingSoon {
+  opacity: 0.45;
+  cursor: not-allowed !important;
+}
+.tabComingSoon:hover { border-color: var(--border) !important; color: var(--text2) !important; }
+
+.soonBadge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: var(--bg4);
+  color: var(--text3);
+  text-transform: uppercase;
+}
+
+.tabDivider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+/* Content */
+.content {
+  flex: 1;
+  overflow-y: auto;
+}
