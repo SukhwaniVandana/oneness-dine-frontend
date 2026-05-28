@@ -14,6 +14,7 @@ import { mapApiError }  from '../components/common/ErrorHandler';
 import MenuItem           from '../components/order/MenuItem';
 import CartPanel          from '../components/order/CartPanel';
 import VariantAddonModal  from '../components/order/VariantAddonModal';
+import ConfirmDialog      from '../components/common/ConfirmDialog';
 import { OrderService, BillService } from '../services/menuOrderService';
 import styles from './OrderTaking.module.css';
 
@@ -62,6 +63,7 @@ export default function OrderTaking() {
   const [loadingAction, setLoadingAction] = useState(null);
   const [searchQuery,   setSearchQuery]   = useState('');
   const [variantItem,   setVariantItem]   = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState({ isOpen: false });
 
   /* Esc → back to tables */
   useEffect(() => {
@@ -330,9 +332,20 @@ export default function OrderTaking() {
         return;
       }
 
-      /* PREPARING → confirm */
+      /* PREPARING → styled confirm dialog */
       if (kitchenStatus === 'PREPARING') {
-        const ok = window.confirm('Item is being prepared in kitchen. Cancel anyway?');
+        const ok = await new Promise(resolve => {
+          setConfirmDialog({
+            isOpen:       true,
+            title:        'Item Being Prepared',
+            message:      'This item is currently being prepared in the kitchen. Cancelling may cause waste. Proceed?',
+            variant:      'warning',
+            confirmLabel: 'Yes, Cancel Item',
+            cancelLabel:  'Keep Item',
+            onConfirm:    () => { setConfirmDialog({ isOpen: false }); resolve(true);  },
+            onCancel:     () => { setConfirmDialog({ isOpen: false }); resolve(false); },
+          });
+        });
         if (!ok) return;
       }
 
@@ -434,6 +447,17 @@ export default function OrderTaking() {
           onClose={() => setVariantItem(null)}
         />
       )}
+
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        variant={confirmDialog.variant}
+        confirmLabel={confirmDialog.confirmLabel}
+        cancelLabel={confirmDialog.cancelLabel}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={confirmDialog.onCancel}
+      />
     </div>
   );
 }
