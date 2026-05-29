@@ -1,0 +1,185 @@
+/* ── Split layout (Menu & Tables tabs) ── */
+.splitLayout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  height: 100%;
+  overflow: hidden;
+}
+.leftPanel {
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow: hidden; background: var(--bg2);
+}
+.rightPanel {
+  display: flex; flex-direction: column;
+  overflow: hidden; background: var(--bg);
+}
+
+/* Panel header */
+.panelHeader {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; border-bottom: 1px solid var(--border);
+  background: var(--bg2); flex-shrink: 0;
+}
+.panelTitle {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700; font-size: 15px; color: var(--text);
+}
+.addBtn {
+  padding: 5px 12px; border-radius: 7px;
+  border: none; background: var(--accent); color: #000;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; transition: opacity 0.1s;
+}
+.addBtn:hover { opacity: 0.88; }
+
+/* Inline form */
+.inlineForm {
+  padding: 12px 14px; border-bottom: 1px solid var(--border);
+  background: var(--bg3); display: flex; flex-direction: column; gap: 8px;
+  flex-shrink: 0;
+}
+.formRow { display: flex; gap: 8px; flex-wrap: wrap; }
+.input {
+  flex: 1; padding: 7px 10px; border-radius: 7px;
+  border: 1px solid var(--border); background: var(--input-bg);
+  color: var(--text); font-size: 12px; font-family: 'DM Sans', sans-serif;
+  outline: none; min-width: 80px; transition: border-color 0.15s;
+}
+.input:focus { border-color: var(--accent); }
+.select {
+  flex: 1; padding: 7px 8px; border-radius: 7px;
+  border: 1px solid var(--border); background: var(--input-bg);
+  color: var(--text); font-size: 12px; font-family: 'DM Sans', sans-serif;
+  outline: none; cursor: pointer;
+}
+.textarea {
+  width: 100%; padding: 7px 10px; border-radius: 7px;
+  border: 1px solid var(--border); background: var(--input-bg);
+  color: var(--text); font-size: 12px; font-family: 'DM Sans', sans-serif;
+  outline: none; resize: vertical; transition: border-color 0.15s;
+}
+.textarea:focus { border-color: var(--accent); }
+.colorPicker { width: 36px; height: 32px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; padding: 2px; }
+.colorLabel  { font-size: 11px; color: var(--text3); }
+.checkLabel  { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); cursor: pointer; }
+.formActions { display: flex; gap: 6px; }
+.saveBtn {
+  padding: 7px 16px; border-radius: 7px; border: none;
+  background: var(--accent); color: #000; font-size: 12px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif; cursor: pointer;
+  display: flex; align-items: center; gap: 5px; transition: opacity 0.1s;
+}
+.saveBtn:hover:not(:disabled) { opacity: 0.88; }
+.saveBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.cancelBtn {
+  padding: 7px 14px; border-radius: 7px;
+  border: 1px solid var(--border); background: var(--bg4);
+  color: var(--text2); font-size: 12px; font-family: 'DM Sans', sans-serif;
+  cursor: pointer; transition: all 0.1s;
+}
+.cancelBtn:hover { border-color: var(--border2); }
+
+/* List */
+.list { flex: 1; overflow-y: auto; }
+.listItem {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background 0.1s;
+}
+.listItem:hover   { background: var(--bg3); }
+.listItemActive   { background: var(--nav-active-bg); border-left: 3px solid var(--accent); }
+.catDot           { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.listItemInfo     { flex: 1; min-width: 0; }
+.listItemName     { font-size: 13px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.listItemMeta     { font-size: 11px; color: var(--text3); white-space: nowrap; }
+.listItemActions  { display: flex; gap: 4px; flex-shrink: 0; }
+.foodIcon         { font-size: 14px; flex-shrink: 0; }
+
+.tag {
+  font-size: 10px; padding: 1px 5px; border-radius: 4px;
+  background: var(--bg4); color: var(--text3);
+  border: 1px solid var(--border);
+}
+
+.editBtn   { background: transparent; border: none; cursor: pointer; font-size: 14px; padding: 2px 4px; border-radius: 4px; opacity: 0.7; transition: opacity 0.1s; }
+.deleteBtn { background: transparent; border: none; cursor: pointer; font-size: 14px; padding: 2px 4px; border-radius: 4px; opacity: 0.7; transition: opacity 0.1s; }
+.editBtn:hover   { opacity: 1; }
+.deleteBtn:hover { opacity: 1; }
+
+.toggleBtn {
+  padding: 3px 8px; border-radius: 5px; border: none;
+  font-size: 10px; font-weight: 600; cursor: pointer;
+  transition: all 0.1s; white-space: nowrap;
+}
+.toggleOn  { background: var(--badge-green-bg); color: var(--accent2); }
+.toggleOff { background: var(--badge-red-bg);   color: var(--accent4); }
+
+/* Table grid (admin) */
+.tableGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px; padding: 14px; overflow-y: auto;
+}
+.tableCard {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.tableNum    { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 18px; color: var(--accent); }
+.tableMeta   { font-size: 11px; color: var(--text3); }
+.tableStatus { font-size: 10px; color: var(--text3); text-transform: uppercase; }
+.tableActions { display: flex; gap: 4px; margin-top: 4px; }
+
+/* Settings layout */
+.settingsLayout { padding: 16px; display: flex; flex-direction: column; gap: 16px; max-width: 700px; }
+.settingsSection { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.settingsSectionTitle {
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  font-size: 13px; font-weight: 600; color: var(--text);
+  background: var(--bg3);
+}
+.settingRow {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-bottom: 1px solid var(--border); gap: 12px;
+}
+.settingRow:last-child { border-bottom: none; }
+.settingInfo  { flex: 1; }
+.settingLabel { font-size: 13px; font-weight: 500; color: var(--text); }
+.settingDesc  { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.toggle {
+  padding: 5px 14px; border-radius: 20px; border: none;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  transition: all 0.15s; white-space: nowrap; min-width: 52px;
+}
+.inputSm {
+  width: 80px; padding: 6px 10px; border-radius: 7px;
+  border: 1px solid var(--border); background: var(--input-bg);
+  color: var(--text); font-size: 13px; text-align: center;
+  outline: none; font-family: 'DM Sans', sans-serif;
+}
+.inputSm:focus { border-color: var(--accent); }
+.settingsSaveRow { padding-top: 8px; }
+
+/* Tax groups table */
+.tabContent { padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; height: 100%; }
+.tableWrap  { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+.table      { width: 100%; border-collapse: collapse; font-size: 12px; }
+.table thead tr { background: var(--bg3); }
+.table th {
+  padding: 10px 12px; text-align: left;
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  color: var(--text3); border-bottom: 1px solid var(--border);
+}
+.table td { padding: 10px 12px; color: var(--text2); border-bottom: 1px solid var(--border); }
+.table tbody tr:last-child td { border-bottom: none; }
+.table tbody tr:hover { background: var(--bg3); }
+.boldCell  { font-weight: 600; color: var(--text); }
+.emptyCell { text-align: center; color: var(--text3); padding: 24px !important; }
+.taxInputGroup { display: flex; flex-direction: column; gap: 3px; min-width: 80px; }
+.taxLabel      { font-size: 10px; color: var(--text3); font-weight: 600; }
+
+/* Loading / empty */
+.loading { display: flex; align-items: center; justify-content: center; padding: 40px; flex: 1; }
+.empty   { display: flex; align-items: center; justify-content: center; padding: 40px; color: var(--text3); font-size: 13px; flex: 1; }

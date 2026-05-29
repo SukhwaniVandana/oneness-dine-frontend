@@ -12,6 +12,7 @@ import OrderTaking     from './pages/OrderTaking';
 import KotScreen   from './pages/KotScreen';
 import BillingScreen from './pages/BillingScreen';
 import ReportsScreen from './pages/ReportsScreen';
+import AdminScreen from './pages/AdminScreen';
 
 const Placeholder = ({ name }) => (
   <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%', flexDirection:'column', gap:'12px' }}>
@@ -52,7 +53,7 @@ export default function App() {
                     <Route path="/kot"     element={<KotScreen />} />
                     <Route path="/billing" element={<BillingScreen />} />
                     <Route path="/reports" element={<ReportsScreen />} />
-                    <Route path="/admin"   element={<Placeholder name="Admin Panel" />} />
+                    <Route path="/admin"   element={<AdminScreen />} />
                   </Route>
                   <Route path="*" element={<Navigate to="/login" replace />} />
                 </Routes>
