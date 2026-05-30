@@ -125,7 +125,8 @@ export default function KotScreen() {
           </div>
         ) : (
           <div className={styles.grid}>
-            {filtered.map(kot => (
+            {filtered.filter(kot => (kot.items || []).some(i => i.kitchenStatus !== 'CANCELLED'))
+              .map(kot => (
               <KotCard
                 key={kot.id}
                 kot={kot}

@@ -20,7 +20,7 @@ export default function PrepSummaryPanel({ kots }) {
   const categoryMap = new Map();
 
   activeKots.forEach(kot => {
-    (kot.items || []).forEach(item => {
+    (kot.items || []).filter(item => item.kitchenStatus !== 'CANCELLED').forEach(item => {
       const category = item.categoryName || 'Other';
       const itemName = item.itemName;
 

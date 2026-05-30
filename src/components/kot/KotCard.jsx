@@ -81,7 +81,7 @@ export default function KotCard({ kot, onUpdateStatus, isUpdating }) {
 
       {/* ── ITEMS ── */}
       <div className={styles.items}>
-        {(kot.items || []).map(item => (
+        {(kot.items || []).filter(i => i.kitchenStatus !== 'CANCELLED').map(item => (
           <div key={item.id} className={styles.item}>
             <span className={styles.qty}>{item.quantity}x</span>
             <span className={styles.itemName}>{item.itemName}</span>
