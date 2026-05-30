@@ -22,12 +22,12 @@ export function useDaily(date) {
   });
 }
 
-export function useSales(from, to) {
+export function useSales(from, to, enabled = true) {
   const branchId = useBranchId();
   return useQuery({
     queryKey: ['report-sales', branchId, from, to],
     queryFn:  () => ReportService.getSales(branchId, from, to).then(r => r.data?.data),
-    enabled:  !!from && !!to,
+    enabled:  !!from && !!to && enabled, // waits until daily is done
     staleTime: 5 * 60_000,
   });
 }

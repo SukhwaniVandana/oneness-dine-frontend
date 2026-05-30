@@ -238,6 +238,7 @@ export default function OrderTaking() {
       toast.success(andPrint ? 'KOT sent & printing!' : 'KOT sent to kitchen!', order.orderNumber);
       setCart([]);
       queryClient.invalidateQueries({ queryKey: ['tables'] });
+      queryClient.invalidateQueries({ queryKey: ['table-orders', tableId] });
       navigate('/tables');
     } catch (err) {
       toast.error(mapApiError(err).message, mapApiError(err).title);
@@ -275,6 +276,7 @@ export default function OrderTaking() {
       toast.success('Bill generated!', order.orderNumber);
       setCart([]);
       queryClient.invalidateQueries({ queryKey: ['tables'] });
+      queryClient.invalidateQueries({ queryKey: ['table-orders', tableId] });
       navigate('/tables');
     } catch (err) {
       toast.error(mapApiError(err).message, mapApiError(err).title);
@@ -296,6 +298,7 @@ export default function OrderTaking() {
       toast.success('Bill generated & printing!', order.orderNumber);
       setCart([]);
       queryClient.invalidateQueries({ queryKey: ['tables'] });
+      queryClient.invalidateQueries({ queryKey: ['table-orders', tableId] });
       navigate('/tables');
     } catch (err) {
       toast.error(mapApiError(err).message, mapApiError(err).title);

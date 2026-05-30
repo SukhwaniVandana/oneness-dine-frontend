@@ -31,7 +31,8 @@ export function useTableOrders(tableId) {
     queryFn: () => OrderService.getTableOrders(tableId).then(r => r.data?.data ?? []),
     enabled: !!tableId,
     refetchInterval: 30_000,
-    staleTime: 10_000,
+    staleTime: 0,
+    refetchOnMount: true
   });
 }
 

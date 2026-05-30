@@ -1,14 +1,17 @@
-import { useSales, useDaily } from '../../hooks/useReports';
+import { useSales, useDaily, today } from '../../hooks/useReports';
 import Spinner from '../common/Spinner';
 import styles from './ReportTabs.module.css';
 
 const fmt  = (n) => Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 0 });
 const fmtC = (n) => '₹ ' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-export default function SalesTab({ from, to, isRange }) {
-  const { data, isLoading, isError } = isRange
-    ? useSales(from, to)
-    : useDaily(from);
+export default function SalesTab({ from, to }) {
+  /* Always use daily for single day, sales for range
+   useDaily auto-generates the summary if missing */
+  const dailyResult  = useDaily(today());  // always fetch today to ensure record exists
+  const salesResult  = useSales(from, to, !dailyResult.isLoading); // wait for daily first
+
+  const { data, isLoading, isError } = from === to ? dailyResult : salesResult;
 
   if (isLoading) return <div className={styles.loading}><Spinner size="lg" variant="amber" /></div>;
   if (isError || !data) return <div className={styles.empty}>⚠️ Could not load sales data</div>;
