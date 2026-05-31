@@ -1,24 +1,25 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { ThemeProvider }         from './context/ThemeContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { ToastProvider }         from './components/common/Toast';
-import { ErrorBoundary }         from './components/common/ErrorHandler';
-import AppLayout                 from './components/layout/AppLayout';
-import Login           from './pages/Login';
+import { ToastProvider } from './components/common/Toast';
+import { ErrorBoundary } from './components/common/ErrorHandler';
+import AppLayout from './components/layout/AppLayout';
+import Login from './pages/Login';
 import TablesDashboard from './pages/TablesDashboard';
-import OrderTaking     from './pages/OrderTaking';
-import KotScreen   from './pages/KotScreen';
+import OrderTaking from './pages/OrderTaking';
+import KotScreen from './pages/KotScreen';
 import BillingScreen from './pages/BillingScreen';
+import BillsScreen from './pages/BillsScreen';
 import ReportsScreen from './pages/ReportsScreen';
 import AdminScreen from './pages/AdminScreen';
 
 const Placeholder = ({ name }) => (
-  <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%', flexDirection:'column', gap:'12px' }}>
-    <div style={{ fontSize:'32px', opacity:0.3 }}>🚧</div>
-    <div style={{ fontFamily:"'Rajdhani',sans-serif", fontSize:'18px', fontWeight:600, color:'var(--text2)' }}>{name} — Coming Soon</div>
-    <div style={{ fontSize:'12px', color:'var(--text3)' }}>This screen is being built next.</div>
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: '12px' }}>
+    <div style={{ fontSize: '32px', opacity: 0.3 }}>🚧</div>
+    <div style={{ fontFamily: "'Rajdhani',sans-serif", fontSize: '18px', fontWeight: 600, color: 'var(--text2)' }}>{name} — Coming Soon</div>
+    <div style={{ fontSize: '12px', color: 'var(--text3)' }}>This screen is being built next.</div>
   </div>
 );
 
@@ -33,7 +34,7 @@ function PublicRoute({ children }) {
 }
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry:2, retryDelay: a => Math.min(1000*2**a, 10000), staleTime:20_000 } },
+  defaultOptions: { queries: { retry: 2, retryDelay: a => Math.min(1000 * 2 ** a, 10000), staleTime: 20_000 } },
 });
 
 export default function App() {
@@ -48,12 +49,15 @@ export default function App() {
                   <Route path="/" element={<Navigate to="/login" replace />} />
                   <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
                   <Route element={<ProtectedRoute />}>
-                    <Route path="/tables"  element={<TablesDashboard />} />
-                    <Route path="/order"   element={<OrderTaking />} />
-                    <Route path="/kot"     element={<KotScreen />} />
+                    <Route path="/tables" element={<TablesDashboard />} />
+                    <Route path="/order" element={<OrderTaking />} />
+                    <Route path="/kot" element={<KotScreen />} />
+                    // Payment screen — from Order screen / Pay now badge
                     <Route path="/billing" element={<BillingScreen />} />
+                    // Review screen — Bill menu in sidebar
+                    <Route path="/bill" element={<BillsScreen />} />
                     <Route path="/reports" element={<ReportsScreen />} />
-                    <Route path="/admin"   element={<AdminScreen />} />
+                    <Route path="/admin" element={<AdminScreen />} />
                   </Route>
                   <Route path="*" element={<Navigate to="/login" replace />} />
                 </Routes>

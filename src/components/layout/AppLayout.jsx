@@ -8,7 +8,7 @@ const NAV = [
   { to: '/tables',  icon: '🍽️', label: 'Tables',  alwaysShow: true  },
   { to: '/order',   icon: '📋', label: 'Order',   alwaysShow: false }, // hidden — access via table tap only
   { to: '/kot',     icon: '👨‍🍳', label: 'KOT',     alwaysShow: true  },
-  { to: '/billing', icon: '💳', label: 'Bill',    alwaysShow: true  },
+  { to: '/bill', icon: '💳', label: 'Bill',    alwaysShow: true  },
   { to: '/reports', icon: '📊', label: 'Reports', alwaysShow: true  },
   { to: '/admin',   icon: '⚙️', label: 'Admin',   alwaysShow: true  },
 ];
@@ -18,6 +18,7 @@ const SCREEN_TITLES = {
   '/order':   'New Order',
   '/kot':     'Kitchen Display (KOT)',
   '/billing': 'Billing',
+  '/bill':    'Bills',
   '/reports': 'Reports Dashboard',
   '/admin':   'Admin Panel',
   '/login':   'Login',
