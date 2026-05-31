@@ -10,52 +10,52 @@ import styles from './TableCard.module.css';
 */
 const EATING_STATUSES = ['KOT_SENT', 'IN_PROGRESS', 'READY', 'SERVED'];
 
-export default function TableCard({ table, onClick }) {
-  const status       = (table.tableStatus || 'FREE').toUpperCase();
+export default function TableCard({ table, onClick, onPayNow }) {
+  const status = (table.tableStatus || 'FREE').toUpperCase();
   const activeOrders = (table.activeOrders || []).filter(o => !o.isSettled);
 
   const eatingOrders = activeOrders.filter(o => EATING_STATUSES.includes(o.orderStatus));
-  const allBilled    = activeOrders.length > 0
-                       && eatingOrders.length === 0
-                       && activeOrders.every(o => o.orderStatus === 'BILLED');
+  const allBilled = activeOrders.length > 0
+    && eatingOrders.length === 0
+    && activeOrders.every(o => o.orderStatus === 'BILLED');
   const sessionCount = activeOrders.length;
 
   const earliest = [...activeOrders]
     .sort((a, b) => new Date(a.sessionStartedAt) - new Date(b.sessionStartedAt))[0];
 
-  const isBilled   = status === 'OCCUPIED' && allBilled;
+  const isBilled = status === 'OCCUPIED' && allBilled;
   const isOccupied = status === 'OCCUPIED' && !allBilled;
-  const isFree     = status === 'FREE' || status === 'AVAILABLE';
+  const isFree = status === 'FREE' || status === 'AVAILABLE';
   const isReserved = status === 'RESERVED';
 
   /* CSS classes — use variables only, no hardcoded colors */
-  const cardClass  = isBilled   ? styles.billed   :
-                     isOccupied ? styles.occupied  :
-                     isReserved ? styles.reserved  :
-                     isFree     ? styles.free      : styles.blocked;
+  const cardClass = isBilled ? styles.billed :
+    isOccupied ? styles.occupied :
+      isReserved ? styles.reserved :
+        isFree ? styles.free : styles.blocked;
 
-  const dotClass   = isBilled   ? styles.dotBlue   :
-                     isOccupied ? styles.dotAmber   :
-                     isReserved ? styles.dotPurple  :
-                     isFree     ? styles.dotTeal    : styles.dotGrey;
+  const dotClass = isBilled ? styles.dotBlue :
+    isOccupied ? styles.dotAmber :
+      isReserved ? styles.dotPurple :
+        isFree ? styles.dotTeal : styles.dotGrey;
 
   /* Text colors — from CSS variables per state */
-  const numColor   = isBilled   ? 'var(--tbl-bill-text)' :
-                     isOccupied ? 'var(--tbl-occ-text)'  :
-                     isReserved ? 'var(--tbl-res-text)'  :
-                     isFree     ? 'var(--tbl-free-text)' : 'var(--text2)';
+  const numColor = isBilled ? 'var(--tbl-bill-text)' :
+    isOccupied ? 'var(--tbl-occ-text)' :
+      isReserved ? 'var(--tbl-res-text)' :
+        isFree ? 'var(--tbl-free-text)' : 'var(--text2)';
 
   const labelColor = 'var(--text3)';
   const timerColor = isBilled ? 'var(--tbl-bill-text)' : 'var(--tbl-occ-text)';
-  const subColor   = isBilled   ? 'var(--tbl-bill-text)' :
-                     isOccupied ? 'var(--tbl-occ-text)'  :
-                     isReserved ? 'var(--tbl-res-text)'  :
-                     isFree     ? 'var(--tbl-free-text)' : 'var(--text3)';
+  const subColor = isBilled ? 'var(--tbl-bill-text)' :
+    isOccupied ? 'var(--tbl-occ-text)' :
+      isReserved ? 'var(--tbl-res-text)' :
+        isFree ? 'var(--tbl-free-text)' : 'var(--text3)';
 
-  const stateLabel = isBilled   ? 'Bill Ready' :
-                     isOccupied ? 'Occupied'   :
-                     isReserved ? 'Reserved'   :
-                     isFree     ? 'Available'  : status;
+  const stateLabel = isBilled ? 'Bill Ready' :
+    isOccupied ? 'Occupied' :
+      isReserved ? 'Reserved' :
+        isFree ? 'Available' : status;
 
   return (
     <div
@@ -100,7 +100,9 @@ export default function TableCard({ table, onClick }) {
       )}
 
       {isBilled && (
-        <span className={styles.payBadge}>🧾 Pay now</span>
+        <button className={styles.payBadge} onClick={e => { e.stopPropagation(); onPayNow?.(); }}>
+          🧾 Pay now
+        </button>
       )}
     </div>
   );

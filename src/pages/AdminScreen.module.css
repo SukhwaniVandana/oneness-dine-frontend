@@ -32,4 +32,4 @@
 .tabActive > span:first-child { color: var(--accent); }
 .tabDesc { font-size: 10px; color: var(--text3); margin-top: 1px; }
 
-.content { flex: 1; overflow: hidden; }
+.content { flex: 1; overflow: auto; }

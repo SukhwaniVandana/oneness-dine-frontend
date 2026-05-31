@@ -129,6 +129,7 @@
   background: var(--badge-blue-bg);
   color: var(--tbl-bill-text);
   border: 1px solid var(--tbl-bill-bd);
+  cursor: pointer;
 }
 
 @keyframes fadeIn {

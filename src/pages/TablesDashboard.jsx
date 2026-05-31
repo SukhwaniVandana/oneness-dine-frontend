@@ -10,10 +10,10 @@ import { useToast } from '../components/common/Toast';
 import styles from './TablesDashboard.module.css';
 
 const FILTERS = [
-  { key: 'ALL',      label: 'All Tables' },
-  { key: 'OCCUPIED', label: 'Occupied'   },
-  { key: 'FREE',     label: 'Available'  },
-  { key: 'RESERVED', label: 'Reserved'   },
+  { key: 'ALL', label: 'All Tables' },
+  { key: 'OCCUPIED', label: 'Occupied' },
+  { key: 'FREE', label: 'Available' },
+  { key: 'RESERVED', label: 'Reserved' },
 ];
 
 const SECTION_ICONS = {
@@ -46,12 +46,12 @@ function getSectionIcon(name) {
   - Exactly 1 active order in eating status → go straight to order screen
 */
 const EATING_STATUSES = ['KOT_SENT', 'IN_PROGRESS', 'READY', 'SERVED'];
-const BILLED_STATUS   = 'BILLED';
+const BILLED_STATUS = 'BILLED';
 
 export default function TablesDashboard() {
   const navigate = useNavigate();
-  const toast    = useToast();
-  const [filter,        setFilter]        = useState('ALL');
+  const toast = useToast();
+  const [filter, setFilter] = useState('ALL');
   const [sessionDialog, setSessionDialog] = useState(null);
 
   const { data: tables, isLoading, isError, error, isFetching } = useTables();
@@ -68,8 +68,8 @@ export default function TablesDashboard() {
   const groupedSections = useMemo(() => {
     if (!Array.isArray(tables)) return [];
     const filtered = tables.filter(t => {
-      if (filter === 'ALL')      return true;
-      if (filter === 'FREE')     return t.tableStatus === 'FREE';
+      if (filter === 'ALL') return true;
+      if (filter === 'FREE') return t.tableStatus === 'FREE';
       if (filter === 'OCCUPIED') return t.tableStatus === 'OCCUPIED';
       if (filter === 'RESERVED') return t.tableStatus === 'RESERVED';
       return true;
@@ -99,9 +99,9 @@ export default function TablesDashboard() {
     }
 
     if (status === 'OCCUPIED') {
-      const unsettled     = (table.activeOrders || []).filter(o => !o.isSettled);
-      const eatingOrders  = unsettled.filter(o => EATING_STATUSES.includes(o.orderStatus));
-      const billedOrders  = unsettled.filter(o => o.orderStatus === BILLED_STATUS);
+      const unsettled = (table.activeOrders || []).filter(o => !o.isSettled);
+      const eatingOrders = unsettled.filter(o => EATING_STATUSES.includes(o.orderStatus));
+      const billedOrders = unsettled.filter(o => o.orderStatus === BILLED_STATUS);
 
       /* No active orders → treat as free */
       if (unsettled.length === 0) {
@@ -118,6 +118,13 @@ export default function TablesDashboard() {
       /* Any billed order OR multiple sessions → show dialog */
       setSessionDialog({ table, orders: unsettled });
     }
+  }
+
+  function handlePayNow(table) {
+    const billedOrder = (table.activeOrders || [])
+      .find(o => o.orderStatus === 'BILLED' && !o.isSettled);
+    if (!billedOrder) return;
+    navigate(`/billing?orderId=${billedOrder.orderId}&tableNumber=${encodeURIComponent(table.tableNumber)}&tableId=${table.id}`);
   }
 
   function handleAddToExisting(order) {
@@ -151,7 +158,7 @@ export default function TablesDashboard() {
           <span className="badge badge-amber">{counts.OCCUPIED ?? 0} Occupied</span>
           <span className="badge badge-green">{counts.FREE ?? 0} Free</span>
           <span className="badge badge-purple">{counts.RESERVED ?? 0} Reserved</span>
-          <span className="badge" style={{ background:'var(--badge-blue-bg)', color:'var(--accent3)' }}>
+          <span className="badge" style={{ background: 'var(--badge-blue-bg)', color: 'var(--accent3)' }}>
             {Array.isArray(tables) ? tables.length : 0} Total
           </span>
         </div>
@@ -202,13 +209,13 @@ export default function TablesDashboard() {
                   </div>
                   <div className={styles.sectionBadges}>
                     {section.counts.OCCUPIED > 0 && <span className="badge badge-amber">{section.counts.OCCUPIED} Occupied</span>}
-                    {section.counts.FREE     > 0 && <span className="badge badge-green">{section.counts.FREE} Free</span>}
+                    {section.counts.FREE > 0 && <span className="badge badge-green">{section.counts.FREE} Free</span>}
                     {section.counts.RESERVED > 0 && <span className="badge badge-purple">{section.counts.RESERVED} Reserved</span>}
                   </div>
                 </div>
                 <div className={styles.sectionGrid}>
                   {section.tables.map(table => (
-                    <TableCard key={table.id} table={table} onClick={() => handleTableClick(table)} />
+                    <TableCard key={table.id} table={table} onClick={() => handleTableClick(table)} onPayNow={() => handlePayNow(table)} />
                   ))}
                 </div>
               </div>
