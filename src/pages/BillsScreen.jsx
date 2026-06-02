@@ -5,12 +5,13 @@ import { useAuth } from '../context/AuthContext';
 import { BillService } from '../services/menuOrderService';
 import Spinner from '../components/common/Spinner';
 import styles from './BillsScreen.module.css';
+import { useToast } from '../components/common/Toast';
 
 const STATUS_COLORS = {
-  DRAFT:    { bg: 'var(--badge-amber-bg)',  color: 'var(--accent)'  },
-  PRINTED:  { bg: 'var(--badge-blue-bg)',   color: 'var(--accent3)' },
-  PAID:     { bg: 'var(--badge-green-bg)',  color: 'var(--accent2)' },
-  VOIDED:   { bg: 'var(--badge-red-bg)',    color: 'var(--accent4)' },
+  DRAFT: { bg: 'var(--badge-amber-bg)', color: 'var(--accent)' },
+  PRINTED: { bg: 'var(--badge-blue-bg)', color: 'var(--accent3)' },
+  PAID: { bg: 'var(--badge-green-bg)', color: 'var(--accent2)' },
+  VOIDED: { bg: 'var(--badge-red-bg)', color: 'var(--accent4)' },
   REFUNDED: { bg: 'var(--badge-purple-bg)', color: 'var(--accent5)' },
 };
 
@@ -31,14 +32,15 @@ export default function BillsScreen() {
   const { session } = useAuth();
   const branchId = session?.branchId || 1;
 
-  const [search,        setSearch]        = useState('');
-  const [statusFilter,  setStatusFilter]  = useState('ALL');
-  const [selectedBill,  setSelectedBill]  = useState(null);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [selectedBill, setSelectedBill] = useState(null);
+  const toast = useToast();
 
   /* Fetch today's bills */
   const { data: bills = [], isLoading, isFetching, refetch } = useQuery({
     queryKey: ['bills-today', branchId],
-    queryFn:  () => import('../services/apiClient')
+    queryFn: () => import('../services/apiClient')
       .then(m => m.default.get('/bills', { params: { branchId } }))
       .then(r => r.data?.data ?? []),
     staleTime: 30_000,
@@ -47,14 +49,14 @@ export default function BillsScreen() {
 
   /* Summary totals */
   const summary = useMemo(() => {
-    const paid   = bills.filter(b => b.billStatus === 'PAID');
-    const due    = bills.filter(b => b.billStatus !== 'PAID' && b.billStatus !== 'VOIDED');
+    const paid = bills.filter(b => b.billStatus === 'PAID');
+    const due = bills.filter(b => b.billStatus !== 'PAID' && b.billStatus !== 'VOIDED');
     return {
-      total:    bills.length,
-      paid:     paid.length,
-      revenue:  paid.reduce((s, b) => s + Number(b.totalAmount || 0), 0),
+      total: bills.length,
+      paid: paid.length,
+      revenue: paid.reduce((s, b) => s + Number(b.totalAmount || 0), 0),
       discount: paid.reduce((s, b) => s + Number(b.orderDiscount || 0) + Number(b.itemDiscount || 0), 0),
-      pending:  due.length,
+      pending: due.length,
     };
   }, [bills]);
 
@@ -81,7 +83,7 @@ export default function BillsScreen() {
         <div className={styles.headerLeft}>
           <div className={styles.title}>Today's Bills</div>
           <div className={styles.date}>
-            {new Date().toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' })}
+            {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </div>
         </div>
         <div className={styles.headerRight}>
@@ -92,11 +94,11 @@ export default function BillsScreen() {
 
       {/* Summary cards */}
       <div className={styles.summaryRow}>
-        <SummaryCard label="Total Bills"  value={summary.total}        color="blue"   icon="🧾" />
-        <SummaryCard label="Paid"         value={summary.paid}         color="green"  icon="✅" />
-        <SummaryCard label="Revenue"      value={fmtC(summary.revenue)} color="accent" icon="💰" isAmount />
-        <SummaryCard label="Discount"     value={fmtC(summary.discount)} color="amber" icon="🏷️" isAmount />
-        <SummaryCard label="Pending"      value={summary.pending}      color="red"    icon="⏳" />
+        <SummaryCard label="Total Bills" value={summary.total} color="blue" icon="🧾" />
+        <SummaryCard label="Paid" value={summary.paid} color="green" icon="✅" />
+        <SummaryCard label="Revenue" value={fmtC(summary.revenue)} color="accent" icon="💰" isAmount />
+        <SummaryCard label="Discount" value={fmtC(summary.discount)} color="amber" icon="🏷️" isAmount />
+        <SummaryCard label="Pending" value={summary.pending} color="red" icon="⏳" />
       </div>
 
       {/* Filters */}
@@ -112,7 +114,7 @@ export default function BillsScreen() {
           {search && <button className={styles.clearBtn} onClick={() => setSearch('')}>✕</button>}
         </div>
         <div className={styles.statusFilters}>
-          {['ALL','DRAFT','PRINTED','PAID','VOIDED'].map(s => (
+          {['ALL', 'DRAFT', 'PRINTED', 'PAID', 'VOIDED'].map(s => (
             <button key={s}
               className={`${styles.filterBtn} ${statusFilter === s ? styles.filterActive : ''}`}
               onClick={() => setStatusFilter(s)}>
@@ -204,11 +206,11 @@ export default function BillsScreen() {
             {/* Totals */}
             <div className={styles.detailSection}>
               {[
-                { label: 'Subtotal',    value: fmtC(selectedBill.subtotal)      },
+                { label: 'Subtotal', value: fmtC(selectedBill.subtotal) },
                 Number(selectedBill.orderDiscount) > 0 && { label: 'Discount', value: `− ${fmtC(selectedBill.orderDiscount)}`, green: true },
-                Number(selectedBill.cgstAmount)    > 0 && { label: 'CGST',     value: fmtC(selectedBill.cgstAmount)           },
-                Number(selectedBill.sgstAmount)    > 0 && { label: 'SGST',     value: fmtC(selectedBill.sgstAmount)           },
-                Number(selectedBill.serviceCharge) > 0 && { label: 'Service',  value: fmtC(selectedBill.serviceCharge)        },
+                Number(selectedBill.cgstAmount) > 0 && { label: 'CGST', value: fmtC(selectedBill.cgstAmount) },
+                Number(selectedBill.sgstAmount) > 0 && { label: 'SGST', value: fmtC(selectedBill.sgstAmount) },
+                Number(selectedBill.serviceCharge) > 0 && { label: 'Service', value: fmtC(selectedBill.serviceCharge) },
               ].filter(Boolean).map((row, i) => (
                 <div key={i} className={styles.detailRow}>
                   <span>{row.label}</span>
@@ -235,14 +237,26 @@ export default function BillsScreen() {
             )}
 
             {/* Actions */}
-            {selectedBill.billStatus !== 'PAID' && selectedBill.billStatus !== 'VOIDED' && (
-              <div className={styles.detailActions}>
+            <div className={styles.detailActions}>
+              {selectedBill.billStatus !== 'PAID' && selectedBill.billStatus !== 'VOIDED' && (
                 <button className={styles.settleBtn}
                   onClick={() => navigate(`/billing?orderId=${selectedBill.orderId}&tableNumber=Bill`)}>
                   🧾 Settle
                 </button>
-              </div>
-            )}
+              )}
+              <button className={styles.reprintBtn}
+                onClick={async () => {
+                  try {
+                    const { printBill: sendToPrinter } = await import('../services/printService');
+                    await sendToPrinter(selectedBill, {});
+                    toast.success('Bill sent to printer!');
+                  } catch (err) {
+                    toast.error('Print failed: ' + err.message);
+                  }
+                }}>
+                🖨️ Reprint
+              </button>
+            </div>
           </div>
         )}
       </div>

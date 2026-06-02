@@ -277,3 +277,18 @@
   gap: 10px; padding: 60px;
   font-size: 13px; color: var(--text3);
 }
+.reprintBtn {
+  width: 100%;
+  padding: 9px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: var(--bg4);
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 6px;
+}
+.reprintBtn:hover { border-color: var(--accent3); color: var(--accent3); }

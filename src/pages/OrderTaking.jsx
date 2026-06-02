@@ -8,14 +8,15 @@ import {
   useRemoveOrderItem, useGenerateBill,
   usePrintBill, useVoidBill,
 } from '../hooks/useOrder';
-import { useAuth }      from '../context/AuthContext';
-import { useToast }     from '../components/common/Toast';
-import { mapApiError }  from '../components/common/ErrorHandler';
-import MenuItem           from '../components/order/MenuItem';
-import CartPanel          from '../components/order/CartPanel';
-import VariantAddonModal  from '../components/order/VariantAddonModal';
-import ConfirmDialog      from '../components/common/ConfirmDialog';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../components/common/Toast';
+import { mapApiError } from '../components/common/ErrorHandler';
+import MenuItem from '../components/order/MenuItem';
+import CartPanel from '../components/order/CartPanel';
+import VariantAddonModal from '../components/order/VariantAddonModal';
+import ConfirmDialog from '../components/common/ConfirmDialog';
 import { OrderService, BillService } from '../services/menuOrderService';
+import { printBill, printKot } from '../services/printService';
 import styles from './OrderTaking.module.css';
 
 function MenuSkeleton({ count = 12 }) {
@@ -38,17 +39,17 @@ function makeCartKey(itemId, variantId) {
 }
 
 export default function OrderTaking() {
-  const navigate    = useNavigate();
-  const [params]    = useSearchParams();
-  const toast       = useToast();
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const toast = useToast();
   const { session } = useAuth();
   const queryClient = useQueryClient();
 
-  const tableId         = params.get('tableId');
-  const tableNumber     = decodeURIComponent(params.get('tableNumber') || 'Table');
-  const forceNew        = params.get('newSession') === '1';
+  const tableId = params.get('tableId');
+  const tableNumber = decodeURIComponent(params.get('tableNumber') || 'Table');
+  const forceNew = params.get('newSession') === '1';
   const existingOrderId = params.get('orderId') ? Number(params.get('orderId')) : null;
-  const tableCapacity   = params.get('capacity') ? Number(params.get('capacity')) : null;
+  const tableCapacity = params.get('capacity') ? Number(params.get('capacity')) : null;
 
   /* Guard: no tableId → back to tables */
   if (!tableId || tableId === 'null' || tableId === '0') {
@@ -56,13 +57,13 @@ export default function OrderTaking() {
     return null;
   }
 
-  const [activeCatId,   setActiveCatId]   = useState(null);
-  const [cart,          setCart]          = useState([]);
-  const [paxCount,      setPaxCount]      = useState(2);
-  const [paxWarning,    setPaxWarning]    = useState(false);
+  const [activeCatId, setActiveCatId] = useState(null);
+  const [cart, setCart] = useState([]);
+  const [paxCount, setPaxCount] = useState(2);
+  const [paxWarning, setPaxWarning] = useState(false);
   const [loadingAction, setLoadingAction] = useState(null);
-  const [searchQuery,   setSearchQuery]   = useState('');
-  const [variantItem,   setVariantItem]   = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [variantItem, setVariantItem] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false });
 
   /* Esc → back to tables */
@@ -79,13 +80,13 @@ export default function OrderTaking() {
   const { data: tableOrders = [], refetch: refetchOrders } = useTableOrders(tableId);
 
   /* Mutations */
-  const createOrder    = useCreateOrder();
-  const addItems       = useAddItems();
-  const createKot      = useCreateKot();
-  const removeItem     = useRemoveOrderItem();
-  const generateBill   = useGenerateBill();
-  const printBill      = usePrintBill();
-  const voidBill       = useVoidBill();
+  const createOrder = useCreateOrder();
+  const addItems = useAddItems();
+  const createKot = useCreateKot();
+  const removeItem = useRemoveOrderItem();
+  const generateBill = useGenerateBill();
+  const printBill = usePrintBill();
+  const voidBill = useVoidBill();
 
   /* Active order */
   const activeOrder = useMemo(() => {
@@ -114,9 +115,9 @@ export default function OrderTaking() {
             const oi = orderItems.find(o => o.id === ki.orderItemId);
             return {
               ...ki,
-              unitPrice:          Number(oi?.unitPrice ?? 0),
-              itemStatus:         oi?.itemStatus ?? ki.kitchenStatus,
-              variantName:        oi?.variantName ?? null,
+              unitPrice: Number(oi?.unitPrice ?? 0),
+              itemStatus: oi?.itemStatus ?? ki.kitchenStatus,
+              variantName: oi?.variantName ?? null,
               specialInstruction: ki.specialInstruction || oi?.specialInstruction,
             };
           }),
@@ -152,7 +153,7 @@ export default function OrderTaking() {
 
   function addDirectToCart(item, variant, addons, unitPrice) {
     const variantId = variant?.id || null;
-    const cartKey   = makeCartKey(item.id, variantId);
+    const cartKey = makeCartKey(item.id, variantId);
     const safePrice = Number(unitPrice) || Number(item.basePrice) || 0;
     setCart(prev => {
       const existing = prev.find(c => c.cartKey === cartKey);
@@ -163,7 +164,7 @@ export default function OrderTaking() {
 
   function handleVariantConfirm({ item, variant, addons, quantity, unitPrice }) {
     const variantId = variant?.id || null;
-    const cartKey   = makeCartKey(item.id, variantId);
+    const cartKey = makeCartKey(item.id, variantId);
     const safePrice = Number(unitPrice) || Number(item.basePrice) || 0;
     setCart(prev => {
       const existing = prev.find(c => c.cartKey === cartKey);
@@ -173,7 +174,7 @@ export default function OrderTaking() {
     setVariantItem(null);
   }
 
-  const changeQty  = useCallback((cartKey, delta) =>
+  const changeQty = useCallback((cartKey, delta) =>
     setCart(prev => prev.map(c => c.cartKey === cartKey ? { ...c, quantity: Math.max(1, c.quantity + delta) } : c)), []);
   const removeFromCart = useCallback((cartKey) =>
     setCart(prev => prev.filter(c => c.cartKey !== cartKey)), []);
@@ -183,10 +184,10 @@ export default function OrderTaking() {
   /* ── Build order items from cart ── */
   function buildOrderItems() {
     return cart.map(c => ({
-      itemId:             c.item.id,
-      variantId:          c.variantId || null,
-      quantity:           c.quantity,
-      isComplimentary:    false,
+      itemId: c.item.id,
+      variantId: c.variantId || null,
+      quantity: c.quantity,
+      isComplimentary: false,
       specialInstruction: c.specialInstruction || '',
     }));
   }
@@ -199,7 +200,7 @@ export default function OrderTaking() {
       const order = await createOrder.mutateAsync({
         branchId: session?.branchId || 1,
         orderType: 'DINE_IN',
-        tableId:   Number(tableId),
+        tableId: Number(tableId),
         paxCount,
         items: buildOrderItems(),
       });
@@ -221,7 +222,7 @@ export default function OrderTaking() {
         if (!confirmed) { setLoadingAction(null); return; }
         /* Fetch existing bill and void it */
         const billRes = await BillService.getBillByOrder(activeOrder.id);
-        const bill    = billRes.data?.data;
+        const bill = billRes.data?.data;
         if (bill?.id) await voidBill.mutateAsync(bill.id);
       }
 
@@ -233,7 +234,22 @@ export default function OrderTaking() {
       if (kotItems.length > 0) {
         await createKot.mutateAsync({ orderId: order.id, kotType: 'NEW', items: kotItems });
       }
-
+      /* Print KOT if requested */
+      if (andPrint && kotItems.length > 0) {
+        try {
+          const kotRes = await OrderService.getKots(order.id);
+          const latestKot = (kotRes.data?.data ?? []).at(-1);
+          if (latestKot) {
+            await printKot({
+              ...latestKot,
+              tableNumber: tableNumber,
+              orderType: 'Dine In',
+            }, {});
+          }
+        } catch (err) {
+          toast.warning('KOT sent but print failed: ' + err.message);
+        }
+      }
       /* TODO: trigger KOT print if andPrint */
       toast.success(andPrint ? 'KOT sent & printing!' : 'KOT sent to kitchen!', order.orderNumber);
       setCart([]);
@@ -251,16 +267,16 @@ export default function OrderTaking() {
   async function ensureBill(order) {
     /* Check if bill already exists */
     try {
-      const res  = await BillService.getBillByOrder(order.id);
+      const res = await BillService.getBillByOrder(order.id);
       const bill = res.data?.data;
       if (bill?.id) return bill; // already exists
     } catch (_) { /* 404 = no bill yet, proceed to create */ }
 
     /* Generate new bill */
     return await generateBill.mutateAsync({
-      orderId:        order.id,
-      isGstInvoice:   false,
-      orderDiscount:  0,
+      orderId: order.id,
+      isGstInvoice: false,
+      orderDiscount: 0,
       packagingCharge: 0,
     });
   }
@@ -294,7 +310,14 @@ export default function OrderTaking() {
       if (cart.length > 0) order = await getOrCreateOrder();
       const bill = await ensureBill(order);
       /* Print the bill */
-      await printBill.mutateAsync(bill.id);
+      try {
+        await printBill({
+          ...bill,
+          tableNumber: tableNumber,
+        }, {});
+      } catch (err) {
+        toast.warning('Bill saved but print failed: ' + err.message);
+      }
       toast.success('Bill generated & printing!', order.orderNumber);
       setCart([]);
       queryClient.invalidateQueries({ queryKey: ['tables'] });
@@ -319,7 +342,7 @@ export default function OrderTaking() {
     try {
       /* Fetch KOTs to check kitchen status */
       const kotRes = await OrderService.getKots(activeOrder.id);
-      const kots   = kotRes.data?.data ?? [];
+      const kots = kotRes.data?.data ?? [];
       let kitchenStatus = null;
       for (const kot of kots) {
         const ki = (kot.items || []).find(k => k.orderItemId === orderItemId);
@@ -339,14 +362,14 @@ export default function OrderTaking() {
       if (kitchenStatus === 'PREPARING') {
         const ok = await new Promise(resolve => {
           setConfirmDialog({
-            isOpen:       true,
-            title:        'Item Being Prepared',
-            message:      'This item is currently being prepared in the kitchen. Cancelling may cause waste. Proceed?',
-            variant:      'warning',
+            isOpen: true,
+            title: 'Item Being Prepared',
+            message: 'This item is currently being prepared in the kitchen. Cancelling may cause waste. Proceed?',
+            variant: 'warning',
             confirmLabel: 'Yes, Cancel Item',
-            cancelLabel:  'Keep Item',
-            onConfirm:    () => { setConfirmDialog({ isOpen: false }); resolve(true);  },
-            onCancel:     () => { setConfirmDialog({ isOpen: false }); resolve(false); },
+            cancelLabel: 'Keep Item',
+            onConfirm: () => { setConfirmDialog({ isOpen: false }); resolve(true); },
+            onCancel: () => { setConfirmDialog({ isOpen: false }); resolve(false); },
           });
         });
         if (!ok) return;
@@ -380,7 +403,7 @@ export default function OrderTaking() {
 
         {catsLoading ? (
           <div className={styles.catLoading}>
-            {[80,95,70,85,75,65].map((w, i) => (
+            {[80, 95, 70, 85, 75, 65].map((w, i) => (
               <div key={i} className={`skeleton ${styles.catSkel}`} style={{ width: w }} />
             ))}
           </div>
@@ -435,8 +458,8 @@ export default function OrderTaking() {
           loadingAction={loadingAction}
           paxCount={paxCount}
           onPaxChange={(n) => {
-              setPaxCount(n);
-              setPaxWarning(tableCapacity && n > tableCapacity);
+            setPaxCount(n);
+            setPaxWarning(tableCapacity && n > tableCapacity);
           }}
           paxWarning={paxWarning}
           tableCapacity={tableCapacity}

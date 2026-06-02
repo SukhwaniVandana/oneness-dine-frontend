@@ -3,13 +3,15 @@ import MenuTab      from '../components/admin/MenuTab';
 import TablesTab    from '../components/admin/TablesTab';
 import SettingsTab  from '../components/admin/SettingsTab';
 import TaxGroupsTab from '../components/admin/TaxGroupsTab';
+import PrinterSettings from '../components/admin/PrinterSettings';
 import styles from './AdminScreen.module.css';
 
 const TABS = [
-  { key: 'menu',     label: '🍽️ Menu',        desc: 'Categories & items'    },
+  { key: 'menu',     label: '🍽️ Menu',         desc: 'Categories & items'    },
   { key: 'tables',   label: '🪑 Tables',       desc: 'Sections & tables'     },
   { key: 'settings', label: '⚙️ Settings',     desc: 'Branch configuration'  },
   { key: 'tax',      label: '📋 Tax Groups',   desc: 'GST & tax setup'       },
+  { key: 'printer',  label: '🖨️ Printer',      desc: 'Thermal printer setup' },
 ];
 
 export default function AdminScreen() {
@@ -41,6 +43,7 @@ export default function AdminScreen() {
         {activeTab === 'tables'   && <TablesTab />}
         {activeTab === 'settings' && <SettingsTab />}
         {activeTab === 'tax'      && <TaxGroupsTab />}
+        {activeTab === 'printer'  && <PrinterSettings />}
       </div>
 
     </div>
