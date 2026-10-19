@@ -1,17 +1,18 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-// Expose safe print API to React renderer
 contextBridge.exposeInMainWorld('electronAPI', {
+  isElectron: true,
 
-  // Printer config
+  // Window controls
+  minimize:    () => ipcRenderer.invoke('window:minimize'),
+  maximize:    () => ipcRenderer.invoke('window:maximize'),
+  close:       () => ipcRenderer.invoke('window:close'),
+  isMaximized: () => ipcRenderer.invoke('window:isMaximized'),
+
+  // Printer
   getPrinterConfig: ()       => ipcRenderer.invoke('printer:getConfig'),
   setPrinterConfig: (config) => ipcRenderer.invoke('printer:setConfig', config),
   testPrinter:      ()       => ipcRenderer.invoke('printer:test'),
-
-  // Printing
-  printBill: (billData) => ipcRenderer.invoke('printer:printBill', billData),
-  printKot:  (kotData)  => ipcRenderer.invoke('printer:printKot',  kotData),
-
-  // Check if running in Electron
-  isElectron: true,
+  printBill:        (data)   => ipcRenderer.invoke('printer:printBill', data),
+  printKot:         (data)   => ipcRenderer.invoke('printer:printKot',  data),
 });

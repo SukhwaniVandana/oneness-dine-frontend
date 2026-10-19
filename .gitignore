@@ -33,3 +33,8 @@ Thumbs.db
 
 # Electron cache
 .electron/
+
+env
+*.bin
+thermal-raw.js
+test-print.js
