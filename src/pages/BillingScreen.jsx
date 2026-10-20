@@ -1,21 +1,21 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth }    from '../context/AuthContext';
-import { useToast }   from '../components/common/Toast';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../components/common/Toast';
 import { mapApiError } from '../components/common/ErrorHandler';
 import { useBill, useGenerateBill, usePayBill, useApplyDiscount } from '../hooks/useBilling';
-import BillSummary   from '../components/billing/BillSummary';
-import PaymentPanel  from '../components/billing/PaymentPanel';
-import Spinner       from '../components/common/Spinner';
-import styles        from './BillingScreen.module.css';
+import BillSummary from '../components/billing/BillSummary';
+import PaymentPanel from '../components/billing/PaymentPanel';
+import Spinner from '../components/common/Spinner';
+import styles from './BillingScreen.module.css';
 
 export default function BillingScreen() {
-  const navigate    = useNavigate();
-  const [params]    = useSearchParams();
-  const toast       = useToast();
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const toast = useToast();
   const { session } = useAuth();
 
-  const orderId     = params.get('orderId');
+  const orderId = params.get('orderId');
   const tableNumber = decodeURIComponent(params.get('tableNumber') || 'Table');
 
   if (!orderId) { navigate('/tables', { replace: true }); return null; }
@@ -24,8 +24,8 @@ export default function BillingScreen() {
   const [discountPct, setDiscountPct] = useState('');
 
   const { data: bill, isLoading, isError } = useBill(orderId);
-  const generateBill  = useGenerateBill();
-  const payBill       = usePayBill();
+  const generateBill = useGenerateBill();
+  const payBill = usePayBill();
   const applyDiscount = useApplyDiscount();
 
   /* Prefill discount from saved bill.discountPct on load */
@@ -39,10 +39,10 @@ export default function BillingScreen() {
   useEffect(() => {
     if (!isLoading && !isError && !bill && orderId) {
       generateBill.mutateAsync({
-        orderId:         Number(orderId),
-        discountPct:     0,
+        orderId: Number(orderId),
+        discountPct: 0,
         packagingCharge: 0,
-        isGstInvoice:    false,
+        isGstInvoice: false,
         createdByUserId: session?.userId,
       }).catch(err => toast.error(mapApiError(err).message, 'Could not generate bill'));
     }
@@ -72,28 +72,43 @@ export default function BillingScreen() {
     };
 
     const subtotal = Number(bill.subtotal || 0);
-    const pct      = Math.min(100, Math.max(0, Number(discountPct) || 0));
+    const pct = Math.min(100, Math.max(0, Number(discountPct) || 0));
+
+    /* When no discount applied — use backend values directly */
+    if (pct === 0) {
+      return {
+        orderDiscount: 0,
+        taxableAmount: subtotal,
+        cgst: Number(bill.cgstAmount || 0),
+        sgst: Number(bill.sgstAmount || 0),
+        igst: Number(bill.igstAmount || 0),
+        cess: Number(bill.cessAmount || 0),
+        serviceCharge: Number(bill.serviceCharge || 0),
+        total: Number(bill.totalAmount || 0),
+      };
+    }
 
     /* Effective tax rates derived from original bill (at 0% discount) */
-    const cgstRate    = subtotal > 0 ? Number(bill.cgstAmount    || 0) / subtotal : 0;
-    const sgstRate    = subtotal > 0 ? Number(bill.sgstAmount    || 0) / subtotal : 0;
-    const igstRate    = subtotal > 0 ? Number(bill.igstAmount    || 0) / subtotal : 0;
-    const cessRate    = subtotal > 0 ? Number(bill.cessAmount    || 0) / subtotal : 0;
-    const svcRate     = subtotal > 0 ? Number(bill.serviceCharge || 0) / subtotal : 0;
+    /* When discount applied — derive rates from backend values */
+    const cgstRate = subtotal > 0 ? Number(bill.cgstAmount || 0) / subtotal : 0;
+    const sgstRate = subtotal > 0 ? Number(bill.sgstAmount || 0) / subtotal : 0;
+    const igstRate = subtotal > 0 ? Number(bill.igstAmount || 0) / subtotal : 0;
+    const cessRate = subtotal > 0 ? Number(bill.cessAmount || 0) / subtotal : 0;
+    const svcRate = subtotal > 0 ? Number(bill.serviceCharge || 0) / subtotal : 0;
 
     /* Apply discount on subtotal */
-    const orderDiscount  = subtotal * pct / 100;
-    const taxableAmount  = subtotal - orderDiscount;
+    const orderDiscount = subtotal * pct / 100;
+    const taxableAmount = subtotal - orderDiscount;
 
     /* GST on taxable amount */
-    const cgst           = taxableAmount * cgstRate;
-    const sgst           = taxableAmount * sgstRate;
-    const igst           = taxableAmount * igstRate;
-    const cess           = taxableAmount * cessRate;
-    const serviceCharge  = taxableAmount * svcRate;
+    const cgst = taxableAmount * cgstRate;
+    const sgst = taxableAmount * sgstRate;
+    const igst = taxableAmount * igstRate;
+    const cess = taxableAmount * cessRate;
+    const serviceCharge = taxableAmount * svcRate;
 
-    const packaging      = Number(bill.packagingCharge || 0);
-    const roundOff       = Number(bill.roundOff || 0);
+    const packaging = Number(bill.packagingCharge || 0);
+    const roundOff = Number(bill.roundOff || 0);
 
     const totalBeforeRound = taxableAmount + cgst + sgst + igst + cess
       + serviceCharge + packaging;
@@ -119,14 +134,14 @@ export default function BillingScreen() {
       /* Step 1: apply discount % if entered — backend recalculates all amounts */
       if (pct > 0) {
         await applyDiscount.mutateAsync({
-          billId:        bill.id,
-          discountPct:   pct,
+          billId: bill.id,
+          discountPct: pct,
           discountReason: 'Manual discount',
         });
       }
 
       /* Step 2: pay using our locally calculated total (matches backend) */
-      const finalTotal    = calc.total;
+      const finalTotal = calc.total;
       const finalPayments = payments.length === 1
         ? [{ ...payments[0], amount: finalTotal }]
         : payments;
@@ -139,7 +154,7 @@ export default function BillingScreen() {
     }
   }
 
-  const isSettling  = applyDiscount.isPending || payBill.isPending;
+  const isSettling = applyDiscount.isPending || payBill.isPending;
   const showLoading = isLoading || generateBill.isPending;
 
   /* Bill with live-calculated total for PaymentPanel */

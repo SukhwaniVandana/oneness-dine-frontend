@@ -23,25 +23,24 @@ export default function BillSummary({
     minimumFractionDigits: 2, maximumFractionDigits: 2,
   });
 
-  const subtotal     = Number(bill.subtotal     || 0);
-  const serviceChg   = calc.serviceCharge;
+  const subtotal = Number(bill.subtotal || 0);
+  const serviceChg = calc.serviceCharge;
   const packagingChg = Number(bill.packagingCharge || 0);
-  const roundOff     = Number(bill.roundOff     || 0);
+  const roundOff = Number(bill.roundOff || 0);
 
   /* Tax rates from backend bill (for % label display) */
-  const cgstRate = subtotal > 0
-    ? ((Number(bill.cgstAmount) / subtotal) * 100).toFixed(1) : 0;
-  const sgstRate = subtotal > 0
-    ? ((Number(bill.sgstAmount) / subtotal) * 100).toFixed(1) : 0;
-  const cessRate = subtotal > 0
-    ? ((Number(bill.cessAmount) / subtotal) * 100).toFixed(1) : 0;
+  /* Use discountPct from bill if available to derive correct base */
+  const taxBase = subtotal > 0 ? subtotal : 1;
+  const cgstRate = ((bill.cgstAmount / taxBase) * 100).toFixed(1);
+  const sgstRate = ((bill.sgstAmt / taxBase) * 100).toFixed(1);
+  const cessRate = ((bill.cessAmt / taxBase) * 100).toFixed(1);
 
-  const hasDiscount  = calc.orderDiscount > 0;
-  const hasCgst      = calc.cgst > 0;
-  const hasSgst      = calc.sgst > 0;
-  const hasIgst      = calc.igst > 0;
-  const hasCess      = calc.cess > 0;
-  const hasService   = calc.serviceCharge > 0;
+  const hasDiscount = calc.orderDiscount > 0;
+  const hasCgst = calc.cgst > 0;
+  const hasSgst = calc.sgst > 0;
+  const hasIgst = calc.igst > 0;
+  const hasCess = calc.cess > 0;
+  const hasService = calc.serviceCharge > 0;
   const hasPackaging = packagingChg > 0;
 
   return (
