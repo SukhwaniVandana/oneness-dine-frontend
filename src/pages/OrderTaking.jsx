@@ -16,7 +16,7 @@ import CartPanel from '../components/order/CartPanel';
 import VariantAddonModal from '../components/order/VariantAddonModal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { OrderService, BillService } from '../services/menuOrderService';
-import { printBill, printKot } from '../services/printService';
+import { printBill as thermalPrintBill, printKot as thermalPrintKot } from '../services/printService';
 import styles from './OrderTaking.module.css';
 
 function MenuSkeleton({ count = 12 }) {
@@ -240,7 +240,7 @@ export default function OrderTaking() {
           const kotRes = await OrderService.getKots(order.id);
           const latestKot = (kotRes.data?.data ?? []).at(-1);
           if (latestKot) {
-            await printKot({
+            await thermalPrintKot({
               ...latestKot,
               tableNumber: tableNumber,
               orderType: 'Dine In',
@@ -311,7 +311,7 @@ export default function OrderTaking() {
       const bill = await ensureBill(order);
       /* Print the bill */
       try {
-        await printBill({
+        await thermalPrintBill({
           ...bill,
           tableNumber: tableNumber,
         }, {});
