@@ -10,7 +10,7 @@ const emptyTG = { name: '', cgstPct: 0, sgstPct: 0, igstPct: 0, cessPct: 0, isIn
 export default function TaxGroupsTab() {
   const toast = useToast();
   const { data: taxGroups = [], isLoading } = useTaxGroups();
-  const { create, remove } = useTaxGroupMutations();
+  const { create, remove, setDefault } = useTaxGroupMutations();
   const [form, setForm] = useState(null);
 
   async function handleSave() {
@@ -24,6 +24,12 @@ export default function TaxGroupsTab() {
     if (!window.confirm('Delete this tax group? Items using it will be unlinked.')) return;
     try { await remove.mutateAsync(id); toast.success('Tax group deleted'); }
     catch (err) { toast.error(mapApiError(err).message); }
+  }
+  async function handleSetDefault(id) {
+    try {
+      await setDefault.mutateAsync(id);
+      toast.success('Default tax group updated!');
+    } catch (err) { toast.error(mapApiError(err).message); }
   }
 
   const fmt = (n) => Number(n || 0).toFixed(2);
@@ -81,14 +87,16 @@ export default function TaxGroupsTab() {
                 <th>IGST %</th>
                 <th>Cess %</th>
                 <th>Total %</th>
-                <th>Inclusive</th>
+                <th className={styles.centerAlignHeader}>Inclusive</th>
+                <th className={styles.centerAlignHeader}>Default</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               {taxGroups.map(tg => (
                 <tr key={tg.id}>
-                  <td className={styles.boldCell}>{tg.name}</td>
+                  <td className={styles.boldCell}>{tg.name}{tg.isDefault && (
+                    <span className={styles.defaultTag}>DEFAULT</span>)}</td>
                   <td>{fmt(tg.cgstPct)}</td>
                   <td>{fmt(tg.sgstPct)}</td>
                   <td>{fmt(tg.igstPct)}</td>
@@ -96,7 +104,17 @@ export default function TaxGroupsTab() {
                   <td className={styles.boldCell}>
                     {fmt(Number(tg.cgstPct) + Number(tg.sgstPct) + Number(tg.igstPct) + Number(tg.cessPct))}%
                   </td>
-                  <td>{tg.isInclusive ? '✓' : '—'}</td>
+                  <td className={styles.centerAlignColumn}>{tg.isInclusive ? '✓' : '—'}</td>
+                  <td className={styles.centerAlignHeader}>
+                    {tg.isDefault
+                      ? <span style={{ color: 'var(--accent2)', fontSize: 16, fontWeight: 'bold' }}>✓</span>
+                      : <button className={styles.setDefaultBtn}
+                        onClick={() => handleSetDefault(tg.id)}
+                        title="Set as default tax group">
+                        ☆
+                      </button>
+                    }
+                  </td>
                   <td>
                     <button className={styles.deleteBtn} onClick={() => handleDelete(tg.id)}>🗑️</button>
                   </td>

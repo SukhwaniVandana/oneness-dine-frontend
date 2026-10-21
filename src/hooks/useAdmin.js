@@ -68,6 +68,7 @@ export function useTaxGroupMutations() {
   return {
     create: useMutation({ mutationFn: (data) => TaxGroupService.create({ ...data, branchId }).then(r => r.data?.data), onSuccess: inv }),
     remove: useMutation({ mutationFn: (id) => TaxGroupService.delete(id), onSuccess: inv }),
+    setDefault: useMutation({ mutationFn: (id) => TaxGroupService.setDefault(id, branchId).then(r => r.data?.data), onSuccess: inv }),
   };
 }
 

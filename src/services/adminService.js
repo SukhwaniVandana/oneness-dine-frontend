@@ -19,6 +19,7 @@ export const TaxGroupService = {
   getAll:  (branchId) => apiClient.get('/menu/tax-groups', { params: { branchId } }),
   create:  (data)     => apiClient.post('/menu/tax-groups', data),
   delete:  (id)       => apiClient.delete(`/menu/tax-groups/${id}`),
+  setDefault: (id, branchId) => apiClient.patch(`/menu/tax-groups/${id}/default`, null, { params: { branchId } }),
 };
 
 export const SectionService = {

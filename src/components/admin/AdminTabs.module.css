@@ -183,3 +183,30 @@
 /* Loading / empty */
 .loading { display: flex; align-items: center; justify-content: center; padding: 40px; flex: 1; }
 .empty   { display: flex; align-items: center; justify-content: center; padding: 40px; color: var(--text3); font-size: 13px; flex: 1; }
+
+.defaultTag {
+  font-size: 8px; font-weight: 700;
+  padding: 1px 5px; border-radius: 4px;
+  background: var(--badge-green-bg);
+  color: var(--accent2);
+  margin-left: 6px;
+  text-transform: uppercase;
+  border: 1px solid rgba(16,185,129,.3);
+}
+.setDefaultBtn {
+  background: transparent;
+  border: 3px solid var(--border);
+  border-radius: 5px;
+  padding: 2px 8px;
+  color: var(--text3);
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.setDefaultBtn:hover { 
+  border-color: var(--accent2); 
+  color: var(--accent2); 
+  background: var(--badge-green-bg);
+}
+
+.centerAlignColumn, .centerAlignHeader {text-align: center !important;}
