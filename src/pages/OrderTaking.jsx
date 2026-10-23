@@ -375,8 +375,18 @@ export default function OrderTaking() {
         if (!ok) return;
       }
 
+      // If order is BILLED, void bill first before removing item
+      if (activeOrder.orderStatus === 'BILLED') {
+        try {
+          const billRes = await BillService.getBillByOrder(activeOrder.id);
+          const bill = billRes.data?.data;
+          if (bill?.id) await voidBill.mutateAsync(bill.id);
+        } catch (_) { /* no active bill, proceed */ }
+      }
+
       await removeItem.mutateAsync({ orderId: activeOrder.id, itemId: orderItemId });
       await refetchOrders();
+      queryClient.invalidateQueries({ queryKey: ['table-orders', tableId] });
       toast.success('Item removed');
     } catch (err) {
       toast.error(mapApiError(err).message, 'Could not remove item');

@@ -32,8 +32,8 @@ export default function BillSummary({
   /* Use discountPct from bill if available to derive correct base */
   const taxBase = subtotal > 0 ? subtotal : 1;
   const cgstRate = ((bill.cgstAmount / taxBase) * 100).toFixed(1);
-  const sgstRate = ((bill.sgstAmt / taxBase) * 100).toFixed(1);
-  const cessRate = ((bill.cessAmt / taxBase) * 100).toFixed(1);
+  const sgstRate = ((bill.sgstAmount / taxBase) * 100).toFixed(1);
+  const cessRate = ((bill.cessAmount / taxBase) * 100).toFixed(1);
 
   const hasDiscount = calc.orderDiscount > 0;
   const hasCgst = calc.cgst > 0;
