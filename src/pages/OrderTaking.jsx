@@ -287,7 +287,30 @@ export default function OrderTaking() {
     setLoadingAction('save');
     try {
       let order = activeOrder;
-      if (cart.length > 0) order = await getOrCreateOrder();
+      if (cart.length > 0) {
+        // If order is already BILLED, void existing bill before adding items
+        if (activeOrder?.orderStatus === 'BILLED') {
+          const confirmed = await new Promise(resolve => {
+            setConfirmDialog({
+              isOpen: true,
+              title: 'Bill Already Generated',
+              message: 'Adding new items will void the current bill and regenerate it. Continue?',
+              variant: 'warning',
+              confirmLabel: 'Yes, Continue',
+              cancelLabel: 'Cancel',
+              onConfirm: () => { setConfirmDialog({ isOpen: false }); resolve(true); },
+              onCancel: () => { setConfirmDialog({ isOpen: false }); resolve(false); },
+            });
+          });
+          if (!confirmed) { setLoadingAction(null); return; }
+          try {
+            const billRes = await BillService.getBillByOrder(activeOrder.id);
+            const bill = billRes.data?.data;
+            if (bill?.id) await voidBill.mutateAsync(bill.id);
+          } catch (_) { /* no active bill */ }
+        }
+        order = await getOrCreateOrder();
+      }
       await ensureBill(order);
       toast.success('Bill generated!', order.orderNumber);
       setCart([]);
@@ -307,8 +330,37 @@ export default function OrderTaking() {
     setLoadingAction('save_print');
     try {
       let order = activeOrder;
-      if (cart.length > 0) order = await getOrCreateOrder();
+      if (cart.length > 0) {
+        // If order is already BILLED, void existing bill before adding items
+        if (activeOrder?.orderStatus === 'BILLED') {
+          const confirmed = await new Promise(resolve => {
+            setConfirmDialog({
+              isOpen: true,
+              title: 'Bill Already Generated',
+              message: 'Adding new items will void the current bill and regenerate it. Continue?',
+              variant: 'warning',
+              confirmLabel: 'Yes, Continue',
+              cancelLabel: 'Cancel',
+              onConfirm: () => { setConfirmDialog({ isOpen: false }); resolve(true); },
+              onCancel: () => { setConfirmDialog({ isOpen: false }); resolve(false); },
+            });
+          });
+          if (!confirmed) { setLoadingAction(null); return; }
+          try {
+            const billRes = await BillService.getBillByOrder(activeOrder.id);
+            const bill = billRes.data?.data;
+            if (bill?.id) await voidBill.mutateAsync(bill.id);
+          } catch (_) { /* no active bill */ }
+        }
+        order = await getOrCreateOrder();
+      }
       const bill = await ensureBill(order);
+      // Mark as printed on backend
+      try {
+        await printBill.mutateAsync(bill.id);
+      } catch (err) {
+        toast.warning('Bill saved but print status failed to update: ' + err.message);
+      }
       /* Print the bill */
       try {
         await thermalPrintBill({
