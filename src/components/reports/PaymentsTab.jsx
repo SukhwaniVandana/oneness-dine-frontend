@@ -12,8 +12,8 @@ const MODES = [
   { key: 'otherTotal',  label: 'Other',  icon: '📋', color: 'red'    },
 ];
 
-export default function PaymentsTab({ from }) {
-  const { data, isLoading, isError } = usePayments(from);
+export default function PaymentsTab({ from, to }) {
+  const { data, isLoading, isError } = usePayments(from, to);
 
   if (isLoading) return <div className={styles.loading}><Spinner size="lg" variant="amber" /></div>;
   if (isError || !data) return <div className={styles.empty}>⚠️ Could not load payment data</div>;

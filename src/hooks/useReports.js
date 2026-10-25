@@ -32,12 +32,12 @@ export function useSales(from, to, enabled = true) {
   });
 }
 
-export function usePayments(date) {
+export function usePayments(from, to) {
   const branchId = useBranchId();
   return useQuery({
-    queryKey: ['report-payments', branchId, date],
-    queryFn:  () => ReportService.getPayments(branchId, date).then(r => r.data?.data),
-    enabled:  !!date,
+    queryKey: ['report-payments', branchId, from, to],
+    queryFn:  () => ReportService.getPayments(branchId, from, to).then(r => r.data?.data),
+    enabled:  !!from && !!to,
     staleTime: 5 * 60_000,
   });
 }

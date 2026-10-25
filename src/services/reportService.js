@@ -10,8 +10,8 @@ const ReportService = {
     apiClient.get('/reports/sales', { params: { branchId, from, to } }),
 
   /* Payment mode breakdown — single date */
-  getPayments: (branchId, date) =>
-    apiClient.get('/reports/payments', { params: { branchId, date } }),
+  getPayments: (branchId, from, to) =>
+    apiClient.get('/reports/payments', { params: { branchId, from, to } }),
 
   /* Top selling items — date range */
   getItems: (branchId, from, to) =>

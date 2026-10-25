@@ -120,7 +120,7 @@ export default function ReportsScreen() {
       {/* Content */}
       <div className={styles.content}>
         {activeTab === 'sales'    && <SalesTab    from={from} to={to} isRange={from !== to} />}
-        {activeTab === 'payments' && <PaymentsTab from={from} />}
+        {activeTab === 'payments' && <PaymentsTab from={from} to={to} />}
         {activeTab === 'items'    && <ItemsTab    from={from} to={to} />}
         {activeTab === 'bills'    && <BillsTab    from={from} to={to} />}
       </div>

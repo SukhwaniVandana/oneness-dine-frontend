@@ -8,12 +8,14 @@ import BillSummary from '../components/billing/BillSummary';
 import PaymentPanel from '../components/billing/PaymentPanel';
 import Spinner from '../components/common/Spinner';
 import styles from './BillingScreen.module.css';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function BillingScreen() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const toast = useToast();
   const { session } = useAuth();
+  const queryClient = useQueryClient();
 
   const orderId = params.get('orderId');
   const tableNumber = decodeURIComponent(params.get('tableNumber') || 'Table');
@@ -147,6 +149,15 @@ export default function BillingScreen() {
         : payments;
 
       await payBill.mutateAsync({ billId: bill.id, payments: finalPayments });
+      
+      // Invalidate all report + bills caches so they refresh immediately
+      queryClient.invalidateQueries({ queryKey: ['bills-today'] });
+      queryClient.invalidateQueries({ queryKey: ['report-daily'] });
+      queryClient.invalidateQueries({ queryKey: ['report-sales'] });
+      queryClient.invalidateQueries({ queryKey: ['report-payments'] });
+      queryClient.invalidateQueries({ queryKey: ['report-items'] });
+      queryClient.invalidateQueries({ queryKey: ['report-bills'] });
+
       toast.success('Payment collected! Table is now free.', bill.billNumber);
       navigate('/tables');
     } catch (err) {

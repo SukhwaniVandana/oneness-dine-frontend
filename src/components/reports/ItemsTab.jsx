@@ -12,7 +12,7 @@ export default function ItemsTab({ from, to }) {
   if (isError)   return <div className={styles.empty}>⚠️ Could not load items data</div>;
   if (!items.length) return <div className={styles.empty}>No items data for this period</div>;
 
-  const maxQty = Math.max(...items.map(i => i.totalQuantity || i.quantity || 0));
+  const maxQty = Math.max(...items.map(i => i.quantitySold || 0));
 
   return (
     <div className={styles.tabContent}>
@@ -32,8 +32,8 @@ export default function ItemsTab({ from, to }) {
             </thead>
             <tbody>
               {items.map((item, idx) => {
-                const qty = item.totalQuantity || item.quantity || 0;
-                const rev = item.totalRevenue  || item.revenue  || 0;
+                const qty = item.quantitySold || 0;
+                const rev = item.totalRevenue || 0;
                 const pct = maxQty > 0 ? (qty / maxQty) * 100 : 0;
                 return (
                   <tr key={idx} className={idx < 3 ? styles.topRow : ''}>
