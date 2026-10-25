@@ -31,6 +31,8 @@ export const OrderService = {
     apiClient.get('/kot', { params: { orderId } }),
   createKot: (payload) =>
     apiClient.post('/kot', payload),
+  updatePax: (orderId, paxCount) =>
+  apiClient.patch(`/orders/${orderId}/pax`, null, { params: { paxCount } }),
 };
 
 /* Bill Service — all billing API calls */

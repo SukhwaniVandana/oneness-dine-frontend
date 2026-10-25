@@ -59,7 +59,7 @@ export default function OrderTaking() {
 
   const [activeCatId, setActiveCatId] = useState(null);
   const [cart, setCart] = useState([]);
-  const [paxCount, setPaxCount] = useState(2);
+  const [paxCount, setPaxCount] = useState(tableCapacity || 2);
   const [paxWarning, setPaxWarning] = useState(false);
   const [loadingAction, setLoadingAction] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -94,6 +94,14 @@ export default function OrderTaking() {
     if (forceNew) return null;
     return tableOrders.find(o => !o.isSettled && o.orderStatus !== 'CANCELLED');
   }, [tableOrders, existingOrderId, forceNew]);
+
+  //Sync from existing order when it loads
+  useEffect(() => {
+    if (activeOrder?.paxCount) {
+      setPaxCount(activeOrder.paxCount);
+      setPaxWarning(tableCapacity && activeOrder.paxCount > tableCapacity);
+    }
+  }, [activeOrder?.id]);  // only re-run when order changes, not on every render
 
   /* Existing items (not cancelled) */
   const existingItems = useMemo(() =>
@@ -195,6 +203,9 @@ export default function OrderTaking() {
   /* ── Create or add to order ── */
   async function getOrCreateOrder() {
     if (activeOrder) {
+      if (paxCount !== activeOrder.paxCount) {
+        await OrderService.updatePax(activeOrder.id, paxCount);  // new call
+      }
       return await addItems.mutateAsync({ orderId: activeOrder.id, items: buildOrderItems() });
     } else {
       const order = await createOrder.mutateAsync({
