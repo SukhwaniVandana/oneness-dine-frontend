@@ -377,7 +377,11 @@ export default function OrderTaking() {
         await thermalPrintBill({
           ...bill,
           tableNumber: tableNumber,
-        }, {});
+        }, {
+          restaurantName: bill?.branchName || '',
+          restaurantAddress: bill?.branchAddress || '',
+          gstNumber: bill?.branchGstin || '',
+        });
       } catch (err) {
         toast.warning('Bill saved but print failed: ' + err.message);
       }

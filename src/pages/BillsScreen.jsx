@@ -248,7 +248,11 @@ export default function BillsScreen() {
                 onClick={async () => {
                   try {
                     const { printBill: sendToPrinter } = await import('../services/printService');
-                    await sendToPrinter(selectedBill, {});
+                    await sendToPrinter(selectedBill, {
+                      restaurantName: selectedBill?.branchName || '',
+                      restaurantAddress: selectedBill?.branchAddress || '',
+                      gstNumber: selectedBill?.branchGstin || '',
+                    });
                     toast.success('Bill sent to printer!');
                   } catch (err) {
                     toast.error('Print failed: ' + err.message);
