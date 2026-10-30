@@ -36,6 +36,7 @@ export function usePayBill() {
       BillService.payBill(billId, {
         payments,
         createdByUserId: session?.userId,
+        cashierUserId: session?.userId,
       }).then(r => r.data?.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tables'] });

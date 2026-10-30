@@ -41,6 +41,18 @@ export default function KotScreen() {
   async function handleStatusUpdate(kotId, nextStatus) {
     try {
       await updateStatus.mutateAsync({ kotId, displayStatus: nextStatus });
+      // When KOT is served, also mark the order as served
+      if (nextStatus === 'SERVED') {
+        const kot = kots.find(k => k.id === kotId);
+        if (kot?.orderId) {
+          try {
+            await import('../services/apiClient')
+              .then(m => m.default.patch(`/orders/${kot.orderId}/status`, {
+                orderStatus: 'SERVED',
+              }));
+          } catch (_) { /* non-blocking — KOT served is the primary action */ }
+        }
+      }
       toast.success(`KOT marked ${nextStatus.toLowerCase()}`);
     } catch (err) {
       toast.error(mapApiError(err).message, 'Could not update KOT');
@@ -127,13 +139,13 @@ export default function KotScreen() {
           <div className={styles.grid}>
             {filtered.filter(kot => (kot.items || []).some(i => i.kitchenStatus !== 'CANCELLED'))
               .map(kot => (
-              <KotCard
-                key={kot.id}
-                kot={kot}
-                onUpdateStatus={handleStatusUpdate}
-                isUpdating={updateStatus.isPending}
-              />
-            ))}
+                <KotCard
+                  key={kot.id}
+                  kot={kot}
+                  onUpdateStatus={handleStatusUpdate}
+                  isUpdating={updateStatus.isPending}
+                />
+              ))}
           </div>
         )}
       </div>

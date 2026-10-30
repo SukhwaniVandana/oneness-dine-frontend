@@ -213,6 +213,7 @@ export default function OrderTaking() {
         orderType: 'DINE_IN',
         tableId: Number(tableId),
         paxCount,
+        waiterUserId: session?.userId || null,
         items: buildOrderItems(),
       });
       queryClient.invalidateQueries({ queryKey: ['tables'] });
