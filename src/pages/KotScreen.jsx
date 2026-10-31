@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useKots, useUpdateKotStatus } from '../hooks/useKot';
+import { useWebSocket } from '../hooks/useWebSocket';
 import { useToast } from '../components/common/Toast';
 import { mapApiError } from '../components/common/ErrorHandler';
 import KotCard from '../components/kot/KotCard';
@@ -17,6 +18,7 @@ const TABS = [
 ];
 
 export default function KotScreen() {
+  useWebSocket(session?.branchId);
   const toast = useToast();
   const [activeTab, setActiveTab] = useState('ALL');
 

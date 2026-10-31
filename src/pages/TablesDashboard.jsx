@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTables } from '../hooks/useTables';
 import { useKots, useUpdateKotStatus } from '../hooks/useKot';
+import { useWebSocket } from '../hooks/useWebSocket';
 import { useAuth } from '../context/AuthContext';
 import TableCard from '../components/tables/TableCard';
 import TableSkeleton from '../components/tables/TableSkeleton';
@@ -69,6 +70,7 @@ function getTableKotStatus(tableNumber, kots) {
 }
 
 export default function TablesDashboard() {
+  useWebSocket(session?.branchId);
   const navigate = useNavigate();
   const toast    = useToast();
   const { session } = useAuth();
