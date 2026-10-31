@@ -32,7 +32,6 @@
   font-size: 20px;
   line-height: 1;
 }
-/* tableNum color via header class */
 .hdrPending  .tableNum,
 .hdrPending.tableNum   { color: var(--accent4); }
 .hdrPreparing .tableNum,
@@ -164,4 +163,26 @@
   font-size: 12px;
   color: var(--text3);
   font-weight: 500;
+}
+
+/* ── TABLET — touch-friendly overrides ── */
+@media (max-width: 1024px) and (pointer: coarse) {
+  .header       { padding: 12px 16px; }
+
+  .tableNum     { font-size: 24px; }
+  .statusLabel  { font-size: 10px; }
+  .kotNum       { font-size: 11px; }
+  .timer        { font-size: 15px; }
+  .station      { font-size: 11px; }
+
+  .items        { padding: 10px 16px; }
+  .item         { padding: 9px 0; font-size: 14px; gap: 8px; }
+  .qty          { font-size: 17px; width: 32px; }
+  .note         { font-size: 14px; }
+
+  .notes        { padding: 8px 16px; gap: 4px; }
+  .noteRow      { font-size: 12px; }
+
+  .actionBtn    { padding: 14px; font-size: 14px; min-height: 48px; }
+  .servedRow    { padding: 14px; font-size: 13px; }
 }

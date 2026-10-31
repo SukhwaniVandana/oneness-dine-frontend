@@ -5,7 +5,6 @@ import { useTheme } from '../context/ThemeContext';
 import AuthService from '../services/authService';
 import { mapApiError } from '../components/common/ErrorHandler';
 import { getRoleHome } from '../config/roles';
-import { getDeviceType } from '../utils/deviceUtils';
 import styles from './Login.module.css';
 
 /* ── Terminal options for Diet Delight ── */
@@ -21,7 +20,7 @@ export default function Login() {
     username:     '',
     password:     '',
     terminalId:   'TERMINAL-1',
-    deviceType:   getDeviceType(),   // ← auto-detected: MOBILE | TABLET | DESKTOP
+    deviceType:   'DESKTOP',
     screenNumber: 1,
   });
 
@@ -157,6 +156,22 @@ export default function Login() {
                 {showPass ? '🙈' : '👁️'}
               </button>
             </div>
+          </div>
+
+          {/* Device Type */}
+          <div className={styles.fieldGroup}>
+            <label className={styles.label}>Device Type</label>
+            <select
+              className={styles.select}
+              name="deviceType"
+              value={form.deviceType}
+              onChange={handleChange}
+              disabled={isLoading}
+            >
+              <option value="DESKTOP">🖥 Desktop / Laptop</option>
+              <option value="CAPTAIN_APP">📱 Mobile (Captain)</option>
+              <option value="KITCHEN_TABLET">📟 Tablet (Kitchen)</option>
+            </select>
           </div>
 
           {/* Terminal + Screen row */}

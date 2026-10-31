@@ -4,6 +4,7 @@ import { useTables } from '../hooks/useTables';
 import { useKots, useUpdateKotStatus } from '../hooks/useKot';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import TableCard from '../components/tables/TableCard';
 import TableSkeleton from '../components/tables/TableSkeleton';
 import TableSessionDialog from '../components/tables/TableSessionDialog';
@@ -33,26 +34,9 @@ function getSectionIcon(name) {
   return '🍽️';
 }
 
-/*
-  TABLE COLOR LOGIC (from v3 document):
-  ─────────────────────────────────────
-  WHITE  = tableStatus AVAILABLE (no active orders)
-  YELLOW = OCCUPIED + any order in eating statuses
-           {KOT_SENT, IN_PROGRESS, READY, SERVED}
-  GREEN  = OCCUPIED + ALL orders have orderStatus = BILLED
-           (bill generated, new group can be seated)
-
-  SESSION DIALOG shown when:
-  - Any order has orderStatus = BILLED (bill done)
-  - OR multiple active sessions
-
-  DIRECT NAV when:
-  - Exactly 1 active order in eating status → go straight to order screen
-*/
 const EATING_STATUSES = ['KOT_SENT', 'IN_PROGRESS', 'READY', 'SERVED'];
 const BILLED_STATUS   = 'BILLED';
 
-/* Compute a single kotStatus value per table from KOT list */
 function getTableKotStatus(tableNumber, kots) {
   if (!tableNumber || !kots?.length) return null;
   const tableKots = kots.filter(
@@ -73,15 +57,16 @@ export default function TablesDashboard() {
   const navigate = useNavigate();
   const toast    = useToast();
   const { session } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   useWebSocket(session?.branchId);
   const isCaptain = session?.roleName === 'CAPTAIN';
 
   const [filter,        setFilter]        = useState('ALL');
   const [sessionDialog, setSessionDialog] = useState(null);
-  const [readyModal,    setReadyModal]    = useState(null); // { table, kots }
+  const [readyModal,    setReadyModal]    = useState(null);
 
   const { data: tables, isLoading, isError, error, isFetching } = useTables();
-  const { data: kots = [] } = useKots();   // shared query — already cached if KotScreen ran
+  const { data: kots = [] } = useKots();
   const updateStatus = useUpdateKotStatus();
 
   const counts = useMemo(() => {
@@ -120,7 +105,6 @@ export default function TablesDashboard() {
   function handleTableClick(table) {
     const status = table.tableStatus;
 
-    /* FREE / RESERVED → new session directly */
     if (status === 'FREE' || status === 'AVAILABLE' || status === 'RESERVED') {
       navigate(`/order?tableId=${table.id}&tableNumber=${encodeURIComponent(table.tableNumber)}&capacity=${table.capacity || 0}&newSession=1`);
       return;
@@ -131,13 +115,11 @@ export default function TablesDashboard() {
       const eatingOrders = unsettled.filter(o => EATING_STATUSES.includes(o.orderStatus));
       const billedOrders = unsettled.filter(o => o.orderStatus === BILLED_STATUS);
 
-      /* No active orders → treat as free */
       if (unsettled.length === 0) {
         navigate(`/order?tableId=${table.id}&tableNumber=${encodeURIComponent(table.tableNumber)}&capacity=${table.capacity || 0}&newSession=1`);
         return;
       }
 
-      /* Captain with READY kots → show "Mark Served" modal instead of navigating */
       if (isCaptain) {
         const tableKots = kots.filter(k => k.tableNumber === table.tableNumber);
         const readyKots = tableKots.filter(k => k.displayStatus === 'READY');
@@ -145,7 +127,6 @@ export default function TablesDashboard() {
           setReadyModal({ table, kots: tableKots });
           return;
         }
-        /* No ready KOTs → Captain can still add more items */
         if (eatingOrders.length === 1 && billedOrders.length === 0) {
           navigate(`/order?tableId=${table.id}&tableNumber=${encodeURIComponent(table.tableNumber)}&capacity=${table.capacity || 0}&orderId=${eatingOrders[0].orderId}`);
           return;
@@ -154,13 +135,11 @@ export default function TablesDashboard() {
         return;
       }
 
-      /* Exactly 1 eating order, no billed orders → go directly (people still ordering) */
       if (eatingOrders.length === 1 && billedOrders.length === 0) {
         navigate(`/order?tableId=${table.id}&tableNumber=${encodeURIComponent(table.tableNumber)}&capacity=${table.capacity || 0}&orderId=${eatingOrders[0].orderId}`);
         return;
       }
 
-      /* Any billed order OR multiple sessions → show dialog */
       setSessionDialog({ table, orders: unsettled });
     }
   }
@@ -168,7 +147,6 @@ export default function TablesDashboard() {
   async function handleMarkServed(kotId) {
     try {
       await updateStatus.mutateAsync({ kotId, displayStatus: 'SERVED' });
-      // Also mark the order as served
       const kot = kots.find(k => k.id === kotId);
       if (kot?.orderId) {
         try {
@@ -180,7 +158,6 @@ export default function TablesDashboard() {
       }
       toast.success('KOT marked served');
 
-      // Close modal if no more READY kots for this table
       if (readyModal) {
         const remaining = kots.filter(
           k => k.tableNumber === readyModal.table.tableNumber
@@ -242,6 +219,11 @@ export default function TablesDashboard() {
           ) : (
             <div className={styles.syncRow}><span className={styles.liveDot} /><span className={styles.syncLabel}>Live</span></div>
           )}
+
+          {/* Theme toggle — visible on all devices */}
+          <button className={styles.themeToggle} onClick={toggleTheme} aria-label="Toggle theme">
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
         </div>
       </div>
 

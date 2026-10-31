@@ -26,6 +26,22 @@
 .badges    { display: flex; gap: 8px; flex-wrap: wrap; }
 .syncRow   { display: flex; align-items: center; gap: 6px; }
 .syncLabel { font-size: 11px; color: var(--text3); }
+.themeToggle {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.themeToggle:hover { border-color: var(--accent); background: var(--bg3); }
+
 .liveDot {
   width: 7px; height: 7px;
   border-radius: 50%;
@@ -117,3 +133,23 @@
 .errorIcon  { font-size: 32px; }
 .errorTitle { font-size: 15px; font-weight: 600; color: var(--accent4); }
 .errorMsg   { font-size: 13px; color: var(--text3); }
+
+/* ── TABLET — touch-friendly overrides ── */
+@media (max-width: 1024px) and (pointer: coarse) {
+  .header     { padding: 12px 16px; }
+  .syncLabel  { font-size: 12px; }
+  .liveDot    { width: 8px; height: 8px; }
+
+  .tabs       { gap: 6px; padding: 10px 16px; }
+  .tab        { padding: 8px 18px; min-height: 40px; font-size: 13px; }
+  .tabCount   { min-width: 20px; height: 20px; font-size: 11px; }
+
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+  }
+
+  .emptyIcon { font-size: 40px; }
+  .emptyText { font-size: 16px; }
+  .emptyHint { font-size: 13px; }
+}

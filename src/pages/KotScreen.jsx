@@ -3,6 +3,7 @@ import { useKots, useUpdateKotStatus } from '../hooks/useKot';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useToast } from '../components/common/Toast';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { mapApiError } from '../components/common/ErrorHandler';
 import KotCard from '../components/kot/KotCard';
 import KotSkeleton from '../components/kot/KotSkeleton';
@@ -20,6 +21,7 @@ const TABS = [
 
 export default function KotScreen() {
   const { session } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   useWebSocket(session?.branchId);
   const toast = useToast();
   const [activeTab, setActiveTab] = useState('ALL');
@@ -27,13 +29,11 @@ export default function KotScreen() {
   const { data: kots = [], isLoading, isFetching, isError, error } = useKots();
   const updateStatus = useUpdateKotStatus();
 
-  /* Filter by tab ALL = everything except settled orders Individual tabs = exact match */
   const filtered = useMemo(() => {
-    if (activeTab === 'ALL') return kots; // show everything
+    if (activeTab === 'ALL') return kots;
     return kots.filter(k => k.displayStatus === activeTab);
   }, [kots, activeTab]);
 
-  /* Count per status */
   const counts = useMemo(() =>
     kots.reduce((acc, k) => {
       acc[k.displayStatus] = (acc[k.displayStatus] || 0) + 1;
@@ -45,7 +45,6 @@ export default function KotScreen() {
   async function handleStatusUpdate(kotId, nextStatus) {
     try {
       await updateStatus.mutateAsync({ kotId, displayStatus: nextStatus });
-      // When KOT is served, also mark the order as served
       if (nextStatus === 'SERVED') {
         const kot = kots.find(k => k.id === kotId);
         if (kot?.orderId) {
@@ -54,7 +53,7 @@ export default function KotScreen() {
               .then(m => m.default.patch(`/orders/${kot.orderId}/status`, {
                 orderStatus: 'SERVED',
               }));
-          } catch (_) { /* non-blocking — KOT served is the primary action */ }
+          } catch (_) { /* non-blocking */ }
         }
       }
       toast.success(`KOT marked ${nextStatus.toLowerCase()}`);
@@ -91,8 +90,12 @@ export default function KotScreen() {
           <div className={styles.syncRow}>
             {isFetching && !isLoading
               ? <><Spinner size="sm" variant="amber" /><span className={styles.syncLabel}>Syncing...</span></>
-              : <><span className={styles.liveDot} /><span className={styles.syncLabel}>Auto-refresh 15s</span></>
+              : <><span className={styles.liveDot} /><span className={styles.syncLabel}>Live</span></>
             }
+            {/* Theme toggle */}
+            <button className={styles.themeToggle} onClick={toggleTheme} aria-label="Toggle theme">
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
           </div>
         </div>
 
