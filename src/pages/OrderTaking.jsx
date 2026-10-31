@@ -66,6 +66,18 @@ export default function OrderTaking() {
   const [variantItem, setVariantItem] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false });
 
+  /* Mobile cart drawer */
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 700);
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 700px)');
+    setIsMobile(mq.matches);
+    const handler = e => { setIsMobile(e.matches); if (!e.matches) setCartDrawerOpen(false); };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
   /* Esc → back to tables */
   useEffect(() => {
     const onKey = e => { if (e.key === 'Escape') navigate('/tables'); };
@@ -515,8 +527,25 @@ export default function OrderTaking() {
         </div>
       </div>
 
-      {/* RIGHT: CART */}
-      <div className={styles.cartWrap}>
+      {/* RIGHT: CART — on mobile this is a bottom drawer */}
+      <div
+        className={`${styles.cartWrap} ${isMobile && cartDrawerOpen ? styles.drawerOpen : ''}`}
+        onClick={isMobile && !cartDrawerOpen ? () => setCartDrawerOpen(true) : undefined}
+      >
+        {isMobile && (
+          <div className={styles.drawerHandle} onClick={e => e.stopPropagation()}>
+            <div className={styles.drawerBar} />
+            {!cartDrawerOpen ? (
+              <span className={styles.drawerHint} onClick={() => setCartDrawerOpen(true)}>
+                🛒 {cart.length + existingItems.length} item{(cart.length + existingItems.length) !== 1 ? 's' : ''} — tap to view cart
+              </span>
+            ) : (
+              <button className={styles.drawerClose} onClick={() => setCartDrawerOpen(false)}>
+                ✕ Close cart
+              </button>
+            )}
+          </div>
+        )}
         <CartPanel
           tableNumber={tableNumber}
           existingOrder={activeOrder}

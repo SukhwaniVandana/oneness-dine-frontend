@@ -157,7 +157,7 @@
   height: 100%;
 }
 
-/* ── RESPONSIVE ── */
+/* ── RESPONSIVE: tablet ── */
 @media (max-width: 1023px) {
   .page { grid-template-columns: 1fr 260px; }
   .menuGrid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
@@ -166,4 +166,95 @@
 @media (min-width: 1600px) {
   .page { grid-template-columns: 1fr 320px; }
   .menuGrid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+}
+
+/* ── RESPONSIVE: mobile (Captain's phone) ── */
+/*
+  On small screens the two-column layout doesn't work.
+  Strategy: stack menu on top, cart as a slide-up drawer pinned to bottom.
+  The CartPanel itself uses a CSS var to know it's in mobile mode.
+*/
+@media (max-width: 700px) {
+  .page {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+    position: relative;
+  }
+
+  .menuPanel {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    /* Reserve space at bottom for the cart handle bar */
+    padding-bottom: 0;
+  }
+
+  .menuGrid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
+  }
+
+  /* Cart moves to a fixed bottom drawer */
+  .cartWrap {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--cart-drawer-height, 60px);
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    overflow: hidden;
+    transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 200;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+  }
+
+  /* When cart drawer is expanded */
+  .cartWrap.drawerOpen {
+    height: 75vh;
+  }
+
+  /* Drag handle at top of drawer */
+  .drawerHandle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 16px 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    user-select: none;
+  }
+
+  .drawerBar {
+    width: 36px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border2);
+  }
+
+  .drawerHint {
+    font-size: 12px;
+    color: var(--accent);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+  }
+
+  .drawerClose {
+    background: transparent;
+    border: none;
+    font-size: 12px;
+    color: var(--text3);
+    cursor: pointer;
+    padding: 2px 8px;
+    font-family: 'DM Sans', sans-serif;
+  }
+}
+
+@media (max-width: 420px) {
+  .menuGrid { grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 6px; }
+  .menuScroll { padding: 8px; }
+  .catTabs { padding: 8px 10px; }
+  .searchWrap { padding: 5px 8px; }
 }
