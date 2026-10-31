@@ -5,6 +5,7 @@ import { useTheme } from '../context/ThemeContext';
 import AuthService from '../services/authService';
 import { mapApiError } from '../components/common/ErrorHandler';
 import { getRoleHome } from '../config/roles';
+import { getDeviceType } from '../utils/deviceUtils';
 import styles from './Login.module.css';
 
 /* ── Terminal options for Diet Delight ── */
@@ -20,7 +21,7 @@ export default function Login() {
     username:     '',
     password:     '',
     terminalId:   'TERMINAL-1',
-    deviceType:   'DESKTOP',
+    deviceType:   getDeviceType(),   // ← auto-detected: MOBILE | TABLET | DESKTOP
     screenNumber: 1,
   });
 

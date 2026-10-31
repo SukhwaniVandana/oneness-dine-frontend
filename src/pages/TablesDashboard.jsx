@@ -70,10 +70,10 @@ function getTableKotStatus(tableNumber, kots) {
 }
 
 export default function TablesDashboard() {
-  useWebSocket(session?.branchId);
   const navigate = useNavigate();
   const toast    = useToast();
   const { session } = useAuth();
+  useWebSocket(session?.branchId);
   const isCaptain = session?.roleName === 'CAPTAIN';
 
   const [filter,        setFilter]        = useState('ALL');

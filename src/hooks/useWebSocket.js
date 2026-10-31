@@ -3,7 +3,8 @@ import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { useQueryClient } from '@tanstack/react-query';
 
-const WS_URL = `${import.meta.env.VITE_API_BASE_URL.replace(/^http/, 'http')}/ws`;
+// Derive WS URL from the API base — strip /api/v1 suffix, keep the host:port
+const WS_URL = `${process.env.REACT_APP_API_URL.replace('/api/v1', '')}/ws`;
 
 /**
  * Connects to the Spring STOMP WebSocket and invalidates React Query caches
