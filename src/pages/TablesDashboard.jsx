@@ -1,19 +1,22 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTables } from '../hooks/useTables';
+import { useKots, useUpdateKotStatus } from '../hooks/useKot';
+import { useAuth } from '../context/AuthContext';
 import TableCard from '../components/tables/TableCard';
 import TableSkeleton from '../components/tables/TableSkeleton';
 import TableSessionDialog from '../components/tables/TableSessionDialog';
+import ReadyKotsModal from '../components/tables/ReadyKotsModal';
 import Spinner from '../components/common/Spinner';
 import { mapApiError } from '../components/common/ErrorHandler';
 import { useToast } from '../components/common/Toast';
 import styles from './TablesDashboard.module.css';
 
 const FILTERS = [
-  { key: 'ALL', label: 'All Tables' },
-  { key: 'OCCUPIED', label: 'Occupied' },
-  { key: 'FREE', label: 'Available' },
-  { key: 'RESERVED', label: 'Reserved' },
+  { key: 'ALL',      label: 'All Tables' },
+  { key: 'OCCUPIED', label: 'Occupied'   },
+  { key: 'FREE',     label: 'Available'  },
+  { key: 'RESERVED', label: 'Reserved'   },
 ];
 
 const SECTION_ICONS = {
@@ -46,15 +49,38 @@ function getSectionIcon(name) {
   - Exactly 1 active order in eating status → go straight to order screen
 */
 const EATING_STATUSES = ['KOT_SENT', 'IN_PROGRESS', 'READY', 'SERVED'];
-const BILLED_STATUS = 'BILLED';
+const BILLED_STATUS   = 'BILLED';
+
+/* Compute a single kotStatus value per table from KOT list */
+function getTableKotStatus(tableNumber, kots) {
+  if (!tableNumber || !kots?.length) return null;
+  const tableKots = kots.filter(
+    k => k.tableNumber === tableNumber && k.displayStatus !== 'SERVED'
+  );
+  if (!tableKots.length) return null;
+  const hasReady     = tableKots.some(k => k.displayStatus === 'READY');
+  const hasPreparing = tableKots.some(
+    k => k.displayStatus === 'PENDING' || k.displayStatus === 'PREPARING'
+  );
+  if (hasReady && hasPreparing) return 'BOTH';
+  if (hasReady)                  return 'READY';
+  if (hasPreparing)              return 'PREPARING';
+  return null;
+}
 
 export default function TablesDashboard() {
   const navigate = useNavigate();
-  const toast = useToast();
-  const [filter, setFilter] = useState('ALL');
+  const toast    = useToast();
+  const { session } = useAuth();
+  const isCaptain = session?.roleName === 'CAPTAIN';
+
+  const [filter,        setFilter]        = useState('ALL');
   const [sessionDialog, setSessionDialog] = useState(null);
+  const [readyModal,    setReadyModal]    = useState(null); // { table, kots }
 
   const { data: tables, isLoading, isError, error, isFetching } = useTables();
+  const { data: kots = [] } = useKots();   // shared query — already cached if KotScreen ran
+  const updateStatus = useUpdateKotStatus();
 
   const counts = useMemo(() => {
     if (!Array.isArray(tables)) return {};
@@ -68,8 +94,8 @@ export default function TablesDashboard() {
   const groupedSections = useMemo(() => {
     if (!Array.isArray(tables)) return [];
     const filtered = tables.filter(t => {
-      if (filter === 'ALL') return true;
-      if (filter === 'FREE') return t.tableStatus === 'FREE';
+      if (filter === 'ALL')      return true;
+      if (filter === 'FREE')     return t.tableStatus === 'FREE';
       if (filter === 'OCCUPIED') return t.tableStatus === 'OCCUPIED';
       if (filter === 'RESERVED') return t.tableStatus === 'RESERVED';
       return true;
@@ -99,13 +125,30 @@ export default function TablesDashboard() {
     }
 
     if (status === 'OCCUPIED') {
-      const unsettled = (table.activeOrders || []).filter(o => !o.isSettled);
+      const unsettled    = (table.activeOrders || []).filter(o => !o.isSettled);
       const eatingOrders = unsettled.filter(o => EATING_STATUSES.includes(o.orderStatus));
       const billedOrders = unsettled.filter(o => o.orderStatus === BILLED_STATUS);
 
       /* No active orders → treat as free */
       if (unsettled.length === 0) {
         navigate(`/order?tableId=${table.id}&tableNumber=${encodeURIComponent(table.tableNumber)}&capacity=${table.capacity || 0}&newSession=1`);
+        return;
+      }
+
+      /* Captain with READY kots → show "Mark Served" modal instead of navigating */
+      if (isCaptain) {
+        const tableKots = kots.filter(k => k.tableNumber === table.tableNumber);
+        const readyKots = tableKots.filter(k => k.displayStatus === 'READY');
+        if (readyKots.length > 0) {
+          setReadyModal({ table, kots: tableKots });
+          return;
+        }
+        /* No ready KOTs → Captain can still add more items */
+        if (eatingOrders.length === 1 && billedOrders.length === 0) {
+          navigate(`/order?tableId=${table.id}&tableNumber=${encodeURIComponent(table.tableNumber)}&capacity=${table.capacity || 0}&orderId=${eatingOrders[0].orderId}`);
+          return;
+        }
+        setSessionDialog({ table, orders: unsettled });
         return;
       }
 
@@ -117,6 +160,35 @@ export default function TablesDashboard() {
 
       /* Any billed order OR multiple sessions → show dialog */
       setSessionDialog({ table, orders: unsettled });
+    }
+  }
+
+  async function handleMarkServed(kotId) {
+    try {
+      await updateStatus.mutateAsync({ kotId, displayStatus: 'SERVED' });
+      // Also mark the order as served
+      const kot = kots.find(k => k.id === kotId);
+      if (kot?.orderId) {
+        try {
+          await import('../services/apiClient')
+            .then(m => m.default.patch(`/orders/${kot.orderId}/status`, {
+              orderStatus: 'SERVED',
+            }));
+        } catch (_) { /* non-blocking */ }
+      }
+      toast.success('KOT marked served');
+
+      // Close modal if no more READY kots for this table
+      if (readyModal) {
+        const remaining = kots.filter(
+          k => k.tableNumber === readyModal.table.tableNumber
+            && k.displayStatus === 'READY'
+            && k.id !== kotId
+        );
+        if (remaining.length === 0) setReadyModal(null);
+      }
+    } catch (err) {
+      toast.error(mapApiError(err).message, 'Could not update KOT');
     }
   }
 
@@ -209,13 +281,19 @@ export default function TablesDashboard() {
                   </div>
                   <div className={styles.sectionBadges}>
                     {section.counts.OCCUPIED > 0 && <span className="badge badge-amber">{section.counts.OCCUPIED} Occupied</span>}
-                    {section.counts.FREE > 0 && <span className="badge badge-green">{section.counts.FREE} Free</span>}
-                    {section.counts.RESERVED > 0 && <span className="badge badge-purple">{section.counts.RESERVED} Reserved</span>}
+                    {section.counts.FREE      > 0 && <span className="badge badge-green">{section.counts.FREE} Free</span>}
+                    {section.counts.RESERVED  > 0 && <span className="badge badge-purple">{section.counts.RESERVED} Reserved</span>}
                   </div>
                 </div>
                 <div className={styles.sectionGrid}>
                   {section.tables.map(table => (
-                    <TableCard key={table.id} table={table} onClick={() => handleTableClick(table)} onPayNow={() => handlePayNow(table)} />
+                    <TableCard
+                      key={table.id}
+                      table={table}
+                      onClick={() => handleTableClick(table)}
+                      onPayNow={() => handlePayNow(table)}
+                      kotStatus={getTableKotStatus(table.tableNumber, kots)}
+                    />
                   ))}
                 </div>
               </div>
@@ -231,6 +309,27 @@ export default function TablesDashboard() {
           onAddToExisting={handleAddToExisting}
           onNewSession={handleNewSession}
           onClose={() => setSessionDialog(null)}
+        />
+      )}
+
+      {readyModal && (
+        <ReadyKotsModal
+          tableNumber={readyModal.table.tableNumber}
+          kots={readyModal.kots}
+          onMarkServed={handleMarkServed}
+          onAddItems={() => {
+            const table = readyModal.table;
+            const unsettled = (table.activeOrders || []).filter(o => !o.isSettled);
+            const eatingOrders = unsettled.filter(o => EATING_STATUSES.includes(o.orderStatus));
+            setReadyModal(null);
+            if (eatingOrders.length === 1) {
+              navigate(`/order?tableId=${table.id}&tableNumber=${encodeURIComponent(table.tableNumber)}&capacity=${table.capacity || 0}&orderId=${eatingOrders[0].orderId}`);
+            } else {
+              setSessionDialog({ table, orders: unsettled });
+            }
+          }}
+          onClose={() => setReadyModal(null)}
+          isUpdating={updateStatus.isPending}
         />
       )}
     </div>
