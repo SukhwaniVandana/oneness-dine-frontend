@@ -38,6 +38,29 @@
 .section      { display: flex; flex-direction: column; gap: 10px; }
 .sectionTitle { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3); }
 
+/* Section header row (title + CSV button) */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* CSV export button */
+.csvBtn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg3); color: var(--text2);
+  font-size: 11px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer; transition: all 0.15s;
+  white-space: nowrap;
+}
+.csvBtn:hover { border-color: var(--accent2); color: var(--accent2); background: rgba(16,185,129,.06); }
+
+/* Standalone CSV row (single-day sales) */
+.csvRow { display: flex; justify-content: flex-end; }
+
 /* Breakdown chips */
 .breakdownRow { display: flex; gap: 10px; flex-wrap: wrap; }
 .chip {
@@ -143,8 +166,16 @@
 .status_red    { background: var(--badge-red-bg);    color: var(--accent4); }
 .status_purple { background: var(--badge-purple-bg); color: var(--accent5); }
 
-/* Sub tabs (Bills) */
-.subTabs { display: flex; gap: 6px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+/* Sub tabs row (Bills) — tabs left, CSV button right */
+.subTabsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+}
+.subTabs { display: flex; gap: 6px; }
 .subTab {
   display: flex; align-items: center; gap: 5px;
   padding: 5px 12px; border-radius: 6px;
@@ -156,6 +187,14 @@
 }
 .subTab:hover { border-color: var(--accent); color: var(--accent); }
 .subTabActive { background: var(--nav-active-bg); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+/* Per-row PDF button in bills table */
+.pdfRowBtn {
+  background: none; border: none; cursor: pointer;
+  font-size: 14px; padding: 2px 4px; border-radius: 4px;
+  opacity: 0.6; transition: opacity 0.15s;
+}
+.pdfRowBtn:hover { opacity: 1; background: var(--bg4); }
+
 .subTabCount {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 18px; height: 18px; border-radius: 9px;

@@ -1,6 +1,7 @@
 import { useItems } from '../../hooks/useReports';
 import Spinner from '../common/Spinner';
 import styles from './ReportTabs.module.css';
+import { downloadCsv } from '../../utils/csvUtils';
 
 const fmt  = (n) => Number(n || 0).toLocaleString('en-IN');
 const fmtC = (n) => '₹ ' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
@@ -14,10 +15,24 @@ export default function ItemsTab({ from, to }) {
 
   const maxQty = Math.max(...items.map(i => i.quantitySold || 0));
 
+  function handleDownloadCsv() {
+    const rows = items.map((item, idx) => ({
+      'Rank':      idx + 1,
+      'Item':      item.itemName || item.name || '',
+      'Category':  item.categoryName || '',
+      'Qty Sold':  item.quantitySold || 0,
+      'Revenue':   Number(item.totalRevenue || 0).toFixed(2),
+    }));
+    downloadCsv(`top_items_${from}_to_${to}.csv`, rows);
+  }
+
   return (
     <div className={styles.tabContent}>
       <div className={styles.section}>
-        <div className={styles.sectionTitle}>Top Selling Items</div>
+        <div className={styles.sectionHeader}>
+          <div className={styles.sectionTitle}>Top Selling Items</div>
+          <button className={styles.csvBtn} onClick={handleDownloadCsv}>⬇ CSV</button>
+        </div>
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead>

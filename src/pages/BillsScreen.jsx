@@ -6,6 +6,7 @@ import { BillService } from '../services/menuOrderService';
 import Spinner from '../components/common/Spinner';
 import styles from './BillsScreen.module.css';
 import { useToast } from '../components/common/Toast';
+import { generateBillPdf } from '../utils/billPdf';
 
 const STATUS_COLORS = {
   DRAFT: { bg: 'var(--badge-amber-bg)', color: 'var(--accent)' },
@@ -94,11 +95,11 @@ export default function BillsScreen() {
 
       {/* Summary cards */}
       <div className={styles.summaryRow}>
-        <SummaryCard label="Total Bills" value={summary.total} color="blue" icon="🧾" />
-        <SummaryCard label="Paid" value={summary.paid} color="green" icon="✅" />
-        <SummaryCard label="Revenue" value={fmtC(summary.revenue)} color="accent" icon="💰" isAmount />
-        <SummaryCard label="Discount" value={fmtC(summary.discount)} color="amber" icon="🏷️" isAmount />
-        <SummaryCard label="Pending" value={summary.pending} color="red" icon="⏳" />
+        <SummaryCard label="Total Bills" value={summary.total}           color="blue"   icon="🧾" />
+        <SummaryCard label="Paid"        value={summary.paid}            color="green"  icon="✅" />
+        <SummaryCard label="Revenue"     value={fmtC(summary.revenue)}   color="accent" icon="💰" isAmount />
+        <SummaryCard label="Discount"    value={fmtC(summary.discount)}  color="amber"  icon="🏷️" isAmount />
+        <SummaryCard label="Pending"     value={summary.pending}         color="red"    icon="⏳" />
       </div>
 
       {/* Filters */}
@@ -157,7 +158,6 @@ export default function BillsScreen() {
                     </div>
                     <div className={styles.billRowMid}>
                       <div className={styles.billTime}>{fmtT(bill.createdAt)}</div>
-                      {/* Payment modes */}
                       <div className={styles.payModes}>
                         {(bill.payments || []).map((p, i) => (
                           <span key={i} title={p.paymentMethod}>
@@ -249,9 +249,9 @@ export default function BillsScreen() {
                   try {
                     const { printBill: sendToPrinter } = await import('../services/printService');
                     await sendToPrinter(selectedBill, {
-                      restaurantName: selectedBill?.branchName || '',
+                      restaurantName:    selectedBill?.branchName    || '',
                       restaurantAddress: selectedBill?.branchAddress || '',
-                      gstNumber: selectedBill?.branchGstin || '',
+                      gstNumber:         selectedBill?.branchGstin   || '',
                     });
                     toast.success('Bill sent to printer!');
                   } catch (err) {
@@ -259,6 +259,16 @@ export default function BillsScreen() {
                   }
                 }}>
                 🖨️ Reprint
+              </button>
+              <button className={styles.pdfBtn}
+                onClick={() => {
+                  try {
+                    generateBillPdf(selectedBill);
+                  } catch (err) {
+                    toast.error('PDF failed: ' + err.message);
+                  }
+                }}>
+                📄 PDF
               </button>
             </div>
           </div>
