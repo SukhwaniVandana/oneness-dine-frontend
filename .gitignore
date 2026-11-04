@@ -7,6 +7,9 @@ build/
 # Electron build output
 dist/
 
+# Android build output
+android/
+
 # Environment files — NEVER commit tokens or secrets
 .env
 .env.local

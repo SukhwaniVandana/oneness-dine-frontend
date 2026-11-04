@@ -12,6 +12,10 @@
     "electron:build": "npm run build && electron-builder"
   },
   "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/cli": "^7.6.10",
+    "@capacitor/core": "^8.6.0",
+    "@stomp/stompjs": "^7.5.0",
     "@tanstack/react-query": "^5.24.1",
     "@tanstack/react-query-devtools": "^5.24.1",
     "axios": "^1.6.7",
@@ -20,7 +24,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.0",
-    "react-scripts": "5.0.1"
+    "react-scripts": "5.0.1",
+    "sockjs-client": "^1.6.1"
   },
   "devDependencies": {
     "@electron/rebuild": "^3.7.2",
