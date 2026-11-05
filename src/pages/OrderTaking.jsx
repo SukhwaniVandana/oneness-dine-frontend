@@ -51,6 +51,9 @@ export default function OrderTaking() {
   const existingOrderId = params.get('orderId') ? Number(params.get('orderId')) : null;
   const tableCapacity = params.get('capacity') ? Number(params.get('capacity')) : null;
 
+  /* Role check — CAPTAIN can only KOT, not Save/Settle */
+  const isCaptain = session?.roleName === 'CAPTAIN';
+
   /* Guard: no tableId → back to tables */
   if (!tableId || tableId === 'null' || tableId === '0') {
     navigate('/tables', { replace: true });
@@ -274,7 +277,6 @@ export default function OrderTaking() {
           toast.warning('KOT sent but print failed: ' + err.message);
         }
       }
-      /* TODO: trigger KOT print if andPrint */
       toast.success(andPrint ? 'KOT sent & printing!' : 'KOT sent to kitchen!', order.orderNumber);
       setCart([]);
       queryClient.invalidateQueries({ queryKey: ['tables'] });
@@ -488,7 +490,6 @@ export default function OrderTaking() {
             <button className={styles.clearBtn} onClick={() => setSearchQuery('')}>✕</button>
           )}
           <span className={styles.searchIcon}>🔍</span>
-          {/* <span className={styles.escHint}>ESC to go back</span>s */}
         </div>
 
         {catsLoading ? (
@@ -570,6 +571,7 @@ export default function OrderTaking() {
           }}
           paxWarning={paxWarning}
           tableCapacity={tableCapacity}
+          isCaptain={isCaptain}
         />
       </div>
 

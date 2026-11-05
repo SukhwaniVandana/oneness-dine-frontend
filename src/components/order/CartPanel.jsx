@@ -32,7 +32,8 @@ export default function CartPanel({
   paxCount,
   onPaxChange,
   paxWarning,
-  tableCapacity
+  tableCapacity,
+  isCaptain,       // boolean — hides Save/Save & Print for CAPTAIN role
 }) {
   const hasNewItems = cart.length > 0;
   const hasExisting = (existingItems || []).filter(i => i.itemStatus !== 'CANCELLED').length > 0;
@@ -160,29 +161,35 @@ export default function CartPanel({
 
       {/* ACTION BUTTONS */}
       <div className={styles.actions}>
-        {/* KOT buttons — send to kitchen */}
+        {/* KOT buttons — always visible */}
         <div className={styles.btnRow}>
           <Btn label="KOT" onClick={onKot}
             disabled={!hasNewItems || isLoading} loading={loadingAction === 'kot'} variant="primary" />
           <Btn label="KOT & Print" onClick={onKotAndPrint}
             disabled={!hasNewItems || isLoading} loading={loadingAction === 'kot_print'} variant="primary" />
         </div>
-        {/* Save buttons — generate bill */}
-        <div className={styles.btnRow}>
-          <Btn label="Save" onClick={onSave}
-            disabled={!hasAnyItems || isLoading} loading={loadingAction === 'save'} variant="secondary" />
-          <Btn label="Save & Print" onClick={onSaveAndPrint}
-            disabled={!hasAnyItems || isLoading} loading={loadingAction === 'save_print'} variant="secondary" />
-        </div>
-        {/* Settle — only when bill generated (orderStatus === BILLED) */}
-        <button
-          className={styles.settleBtn}
-          onClick={onSettle}
-          disabled={!canSettle || isLoading}
-          title={!canSettle ? 'Generate bill first (tap Save)' : 'Proceed to payment'}
-        >
-          🧾 {canSettle ? 'Settle Bill' : 'Save to Generate Bill First'}
-        </button>
+
+        {/* Save buttons — hidden for CAPTAIN role */}
+        {!isCaptain && (
+          <div className={styles.btnRow}>
+            <Btn label="Save" onClick={onSave}
+              disabled={!hasAnyItems || isLoading} loading={loadingAction === 'save'} variant="secondary" />
+            <Btn label="Save & Print" onClick={onSaveAndPrint}
+              disabled={!hasAnyItems || isLoading} loading={loadingAction === 'save_print'} variant="secondary" />
+          </div>
+        )}
+
+        {/* Settle — hidden for CAPTAIN, only non-captain roles can settle */}
+        {!isCaptain && (
+          <button
+            className={styles.settleBtn}
+            onClick={onSettle}
+            disabled={!canSettle || isLoading}
+            title={!canSettle ? 'Generate bill first (tap Save)' : 'Proceed to payment'}
+          >
+            🧾 {canSettle ? 'Settle Bill' : 'Save to Generate Bill First'}
+          </button>
+        )}
       </div>
     </div>
   );
