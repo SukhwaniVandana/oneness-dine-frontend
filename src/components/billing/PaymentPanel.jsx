@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Spinner from '../common/Spinner';
 import styles from './PaymentPanel.module.css';
 
@@ -17,10 +17,36 @@ export default function PaymentPanel({ bill, onSettle, isSettling }) {
   const [isSplit,      setIsSplit]      = useState(false);
   const [splitAmounts, setSplitAmounts] = useState({ CASH: '', CARD: '', UPI: '', CREDIT: '' });
 
+  /* Customer info — always collectable, mandatory only for Due/Credit */
+  const [customerName,    setCustomerName]    = useState('');
+  const [customerMobile,  setCustomerMobile]  = useState('');
+  const [customerOpen,    setCustomerOpen]    = useState(false);
+
   /* Cash change */
   const cashPaid  = Number(cashAmount) || 0;
   const changeAmt = mode === 'CASH' && cashPaid > totalAmount
     ? cashPaid - totalAmount : 0;
+
+  /* Does this settlement have any Due/Credit component? */
+  const hasCreditComponent = !isSplit
+    ? mode === 'CREDIT'
+    : Number(splitAmounts['CREDIT']) > 0;
+
+  /* Auto-open customer section when credit mode is selected */
+  useEffect(() => {
+    if (hasCreditComponent) setCustomerOpen(true);
+  }, [hasCreditComponent]);
+
+  /* Validation */
+  const customerNameTrimmed   = customerName.trim();
+  const customerMobileTrimmed = customerMobile.trim();
+  /* Mobile format check (only when something is typed) */
+  const isMobileFormatValid = customerMobileTrimmed.length === 0
+    || /^[6-9]\d{9}$/.test(customerMobileTrimmed);
+  /* For credit: name + valid mobile are required */
+  const customerInfoValid = hasCreditComponent
+    ? (customerNameTrimmed.length > 0 && /^[6-9]\d{9}$/.test(customerMobileTrimmed))
+    : true; // optional for cash/card/upi
 
   /* Build payments */
   function getPayments() {
@@ -43,10 +69,20 @@ export default function PaymentPanel({ bill, onSettle, isSettling }) {
   }
 
   const payments  = getPayments();
-  const canSettle = !!payments && !isSettling && !!bill;
+  const canSettle = !!payments && !isSettling && !!bill && customerInfoValid;
 
   const splitTotal     = PAYMENT_MODES.reduce((s, m) => s + (Number(splitAmounts[m.key]) || 0), 0);
   const splitRemaining = totalAmount - splitTotal;
+
+  function handleSettle() {
+    if (!canSettle) return;
+    /* Pass customer info if the section is open and has any data, or is credit */
+    const hasCustomerData = customerNameTrimmed.length > 0 || customerMobileTrimmed.length > 0;
+    const customerInfo = (customerOpen && hasCustomerData)
+      ? { customerName: customerNameTrimmed, customerMobile: customerMobileTrimmed }
+      : null;
+    onSettle(payments, customerInfo);
+  }
 
   return (
     <div className={styles.panel}>
@@ -191,12 +227,80 @@ export default function PaymentPanel({ bill, onSettle, isSettling }) {
         </div>
       )}
 
+      {/* ── CUSTOMER INFO ──
+           • Auto-opens + mandatory fields when Due/Credit
+           • Always available as collapsible section for other modes  */}
+      <div className={styles.customerSection}>
+        <button
+          className={`${styles.customerToggle} ${hasCreditComponent ? styles.customerRequired : ''}`}
+          onClick={() => !hasCreditComponent && setCustomerOpen(p => !p)}
+          style={{ cursor: hasCreditComponent ? 'default' : 'pointer' }}
+        >
+          <span className={styles.customerIcon}>👤</span>
+          <span className={styles.customerToggleLabel}>Customer Details</span>
+          {hasCreditComponent
+            ? <span className={styles.requiredBadge}>Required for Due</span>
+            : <span className={styles.optionalBadge}>Optional</span>
+          }
+          {!hasCreditComponent && (
+            <span className={styles.chevron}>{customerOpen ? '▲' : '▼'}</span>
+          )}
+        </button>
+
+        {(customerOpen || hasCreditComponent) && (
+          <div className={styles.customerFields}>
+            <div className={styles.customerField}>
+              <label className={styles.customerLabel}>
+                Customer Name
+                {hasCreditComponent && <span className={styles.reqStar}> *</span>}
+              </label>
+              <input
+                className={styles.customerInput}
+                type="text"
+                placeholder="e.g. Rajesh Kumar"
+                value={customerName}
+                onChange={e => setCustomerName(e.target.value)}
+                maxLength={80}
+              />
+            </div>
+            <div className={styles.customerField}>
+              <label className={styles.customerLabel}>
+                Mobile Number
+                {hasCreditComponent && <span className={styles.reqStar}> *</span>}
+              </label>
+              <div className={`${styles.mobileInputWrap} ${
+                customerMobileTrimmed.length > 0 && !isMobileFormatValid ? styles.inputError : ''
+              }`}>
+                <span className={styles.mobilePrefix}>+91</span>
+                <input
+                  className={styles.mobileInput}
+                  type="tel"
+                  placeholder="98765 43210"
+                  value={customerMobile}
+                  onChange={e => setCustomerMobile(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                  maxLength={10}
+                  inputMode="numeric"
+                />
+              </div>
+              {customerMobileTrimmed.length > 0 && !isMobileFormatValid && (
+                <div className={styles.fieldError}>Enter valid 10-digit mobile number</div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Settle button */}
       <div className={styles.settleWrap}>
         <button
           className={styles.settleBtn}
-          onClick={() => canSettle && onSettle(payments)}
+          onClick={handleSettle}
           disabled={!canSettle}
+          title={
+            !payments ? 'Enter payment amount' :
+            !customerInfoValid ? 'Customer name & mobile required for Due payment' :
+            ''
+          }
         >
           {isSettling
             ? <><Spinner size="sm" variant="dark" /> Processing...</>
@@ -205,6 +309,11 @@ export default function PaymentPanel({ bill, onSettle, isSettling }) {
             : `✓ Settle ₹${totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
           }
         </button>
+        {hasCreditComponent && !customerInfoValid && payments && (
+          <div className={styles.settleHint}>
+            ⚠ Enter customer name &amp; mobile to proceed
+          </div>
+        )}
       </div>
     </div>
   );

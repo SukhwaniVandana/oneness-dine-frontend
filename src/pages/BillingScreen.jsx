@@ -110,7 +110,6 @@ export default function BillingScreen() {
     const serviceCharge = taxableAmount * svcRate;
 
     const packaging = Number(bill.packagingCharge || 0);
-    const roundOff = Number(bill.roundOff || 0);
 
     const totalBeforeRound = taxableAmount + cgst + sgst + igst + cess
       + serviceCharge + packaging;
@@ -127,8 +126,8 @@ export default function BillingScreen() {
     };
   }, [bill, discountPct]);
 
-  /* Settle */
-  async function handleSettle(payments) {
+  /* Settle — receives payments array and optional customerInfo for Due payments */
+  async function handleSettle(payments, customerInfo) {
     if (!bill?.id) return;
     try {
       const pct = Number(discountPct) || 0;
@@ -148,8 +147,18 @@ export default function BillingScreen() {
         ? [{ ...payments[0], amount: finalTotal }]
         : payments;
 
-      await payBill.mutateAsync({ billId: bill.id, payments: finalPayments });
-      
+      /* Step 3: include customer info when payment has Due/Credit component */
+      const payPayload = {
+        billId: bill.id,
+        payments: finalPayments,
+        ...(customerInfo ? {
+          customerName:   customerInfo.customerName,
+          customerMobile: customerInfo.customerMobile,
+        } : {}),
+      };
+
+      await payBill.mutateAsync(payPayload);
+
       // Invalidate all report + bills caches so they refresh immediately
       queryClient.invalidateQueries({ queryKey: ['bills-today'] });
       queryClient.invalidateQueries({ queryKey: ['report-daily'] });
