@@ -32,11 +32,13 @@ export function usePayBill() {
   const { session } = useAuth();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ billId, payments }) =>
+    mutationFn: ({ billId, payments, customerName, customerMobile }) =>
       BillService.payBill(billId, {
         payments,
         createdByUserId: session?.userId,
-        cashierUserId: session?.userId,
+        cashierUserId:   session?.userId,
+        ...(customerName   ? { customerName }   : {}),
+        ...(customerMobile ? { customerMobile } : {}),
       }).then(r => r.data?.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tables'] });
