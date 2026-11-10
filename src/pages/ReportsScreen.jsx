@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import SalesTab    from '../components/reports/SalesTab';
-import PaymentsTab from '../components/reports/PaymentsTab';
-import ItemsTab    from '../components/reports/ItemsTab';
-import BillsTab    from '../components/reports/BillsTab';
+import SalesTab          from '../components/reports/SalesTab';
+import PaymentsTab       from '../components/reports/PaymentsTab';
+import ItemsTab          from '../components/reports/ItemsTab';
+import BillsTab          from '../components/reports/BillsTab';
+import CustomerLedgerTab from '../components/reports/CustomerLedgerTab';
 import styles from './ReportsScreen.module.css';
 
-/* Today & 30 days ago */
+/* Today & N days ago */
 function todayStr() { return new Date().toISOString().split('T')[0]; }
 function daysAgo(n) {
   const d = new Date();
@@ -15,10 +16,11 @@ function daysAgo(n) {
 
 /* Active tabs — fully built */
 const ACTIVE_TABS = [
-  { key: 'sales',    label: '📊 Sales',         range: true  },
-  { key: 'payments', label: '💳 Payments',       range: false },
-  { key: 'items',    label: '🍽️ Top Items',      range: true  },
-  { key: 'bills',    label: '🧾 Bills',           range: true  },
+  { key: 'sales',    label: '📊 Sales',           range: true  },
+  { key: 'payments', label: '💳 Payments',         range: false },
+  { key: 'items',    label: '🍽️ Top Items',        range: true  },
+  { key: 'bills',    label: '🧾 Bills',             range: true  },
+  { key: 'ledger',   label: '📒 Customer Ledger',  range: true  },
 ];
 
 /* Coming soon tabs */
@@ -55,13 +57,11 @@ export default function ReportsScreen() {
 
         {/* Date controls */}
         <div className={styles.dateControls}>
-          {/* Quick presets */}
           <div className={styles.quickBtns}>
             <button className={styles.quickBtn} onClick={() => handleQuick(1)}>Today</button>
             <button className={styles.quickBtn} onClick={() => handleQuick(7)}>7 Days</button>
             <button className={styles.quickBtn} onClick={() => handleQuick(30)}>30 Days</button>
           </div>
-          {/* Date inputs */}
           <div className={styles.dateRow}>
             <input
               type="date"
@@ -119,10 +119,11 @@ export default function ReportsScreen() {
 
       {/* Content */}
       <div className={styles.content}>
-        {activeTab === 'sales'    && <SalesTab    from={from} to={to} isRange={from !== to} />}
-        {activeTab === 'payments' && <PaymentsTab from={from} to={to} />}
-        {activeTab === 'items'    && <ItemsTab    from={from} to={to} />}
-        {activeTab === 'bills'    && <BillsTab    from={from} to={to} />}
+        {activeTab === 'sales'    && <SalesTab          from={from} to={to} isRange={from !== to} />}
+        {activeTab === 'payments' && <PaymentsTab        from={from} to={to} />}
+        {activeTab === 'items'    && <ItemsTab           from={from} to={to} />}
+        {activeTab === 'bills'    && <BillsTab           from={from} to={to} />}
+        {activeTab === 'ledger'   && <CustomerLedgerTab  from={from} to={to} />}
       </div>
 
     </div>

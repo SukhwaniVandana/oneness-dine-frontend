@@ -1,0 +1,237 @@
+/* CustomerLedger.module.css — matches ReportTabs.module.css patterns */
+
+/* ── Customer list ────────────────────────────────────── */
+.customerList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.customerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.customerRow:hover {
+  border-color: var(--accent);
+  background: var(--bg3);
+}
+.customerRowActive {
+  border-color: var(--accent);
+  background: var(--nav-active-bg);
+}
+
+.customerInfo { flex: 1; min-width: 0; }
+.customerName {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.customerPhone {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 2px;
+}
+
+.balanceBadge {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--accent4);
+  white-space: nowrap;
+}
+.balanceDue     { color: var(--accent4); }          /* red  — owes money   */
+.balanceAdvance { color: var(--accent2); }          /* green — has advance  */
+.balanceZero    { color: var(--text3);   }          /* grey  — fully settled */
+
+.collectBtn {
+  padding: 5px 11px;
+  border-radius: 7px;
+  border: 1px solid var(--accent2);
+  background: rgba(16,185,129,.08);
+  color: var(--accent2);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.collectBtn:hover {
+  background: rgba(16,185,129,.18);
+}
+.collectBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Detail panel ─────────────────────────────────────── */
+.detailPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.detailHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.backBtn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: var(--text2);
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.backBtn:hover { border-color: var(--accent); color: var(--accent); }
+
+.detailTitle { font-size: 15px; font-weight: 700; color: var(--text); }
+.detailPhone { font-size: 12px; color: var(--text3); }
+
+/* ── Ledger table ─────────────────────────────────────── */
+.txnDebit  { color: var(--accent4); font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 13px; }
+.txnCredit { color: var(--accent2); font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 13px; }
+
+.txnBadge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.txnBadgeDebit  { background: rgba(239,68,68,.1);   color: var(--accent4); }
+.txnBadgeCredit { background: rgba(16,185,129,.1);  color: var(--accent2); }
+
+/* ── Collect payment modal ────────────────────────────── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+.modalSubtitle {
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: -10px;
+}
+
+.fieldLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 5px;
+}
+
+.fieldInput {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text);
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+.fieldInput:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.outstandingLabel {
+  font-size: 12px;
+  color: var(--text3);
+}
+.outstandingValue {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--accent4);
+}
+
+.modalActions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.cancelBtn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.cancelBtn:hover { border-color: var(--accent); }
+
+.confirmBtn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent2);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.confirmBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.confirmBtn:not(:disabled):hover { opacity: 0.85; }
+
+.errorMsg {
+  font-size: 12px;
+  color: var(--accent4);
+  padding: 7px 10px;
+  border-radius: 7px;
+  background: rgba(239,68,68,.08);
+  border: 1px solid rgba(239,68,68,.2);
+}

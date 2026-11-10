@@ -6,27 +6,22 @@ import { downloadCsv } from '../../utils/csvUtils';
 import { generateBillPdf } from '../../utils/billPdf';
 
 const fmtC = (n) => '₹ ' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
-
-const fmtDateTime = (s) => {
-  if (!s) return '—';
-  const d = new Date(s);
-  if (isNaN(d)) return s;
-  const dd   = String(d.getDate()).padStart(2, '0');
-  const mm   = String(d.getMonth() + 1).padStart(2, '0');
-  const yyyy = d.getFullYear();
-  const hh   = String(d.getHours()).padStart(2, '0');
-  const min  = String(d.getMinutes()).padStart(2, '0');
-  return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
-};
+const fmtD = (s) => s ? new Date(s).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
 
 const STATUS_COLORS = {
-  PAID: 'green', DRAFT: 'amber', PRINTED: 'blue', VOIDED: 'red', REFUNDED: 'purple',
+  PAID: 'green',
+  DRAFT: 'amber',
+  PRINTED: 'blue',
+  VOIDED: 'red',
+  REFUNDED: 'purple',
+  CREDIT_DUE: 'red',      // full credit — customer owes full amount
+  PARTIAL_CREDIT: 'amber',    // split payment — partial credit outstanding
 };
 
 const SUB_TABS = [
-  { key: 'all',      label: 'All Bills'       },
+  { key: 'all', label: 'All Bills' },
   { key: 'discount', label: 'Discount Report' },
-  { key: 'due',      label: 'Due / Credit'    },
+  { key: 'due', label: 'Due / Credit' },
 ];
 
 function primaryPayment(bill) {
@@ -41,17 +36,22 @@ export default function BillsTab({ from, to }) {
   const { data: bills = [], isLoading, isError } = useBills(from, to);
 
   if (isLoading) return <div className={styles.loading}><Spinner size="lg" variant="amber" /></div>;
-  if (isError)   return <div className={styles.empty}>⚠️ Could not load bills data</div>;
+  if (isError) return <div className={styles.empty}>⚠️ Could not load bills data</div>;
 
+  /* Filter by sub tab */
   const filtered = subTab === 'discount'
     ? bills.filter(b => Number(b.orderDiscount) > 0 || Number(b.itemDiscount) > 0)
     : subTab === 'due'
-    ? bills.filter(b => (b.payments || []).some(p => p.paymentMethod === 'CREDIT'))
-    : bills;
+      ? bills.filter(b =>
+        b.billStatus === 'CREDIT_DUE' ||
+        b.billStatus === 'PARTIAL_CREDIT' ||
+        (b.payments || []).some(p => p.paymentMethod === 'CREDIT'))
+      : bills;
 
-  const totalRevenue  = bills.reduce((s, b) => s + Number(b.totalAmount   || 0), 0);
+  /* Summary totals */
+  const totalRevenue = bills.reduce((s, b) => s + Number(b.totalAmount || 0), 0);
   const totalDiscount = bills.reduce((s, b) => s + Number(b.orderDiscount || 0) + Number(b.itemDiscount || 0), 0);
-  const totalDue      = bills
+  const totalDue = bills
     .flatMap(b => b.payments || [])
     .filter(p => p.paymentMethod === 'CREDIT')
     .reduce((s, p) => s + Number(p.amount || 0), 0);
@@ -59,22 +59,22 @@ export default function BillsTab({ from, to }) {
   function handleDownloadCsv() {
     const rows = filtered.map(bill => {
       const discAmt = Number(bill.orderDiscount || 0) + Number(bill.itemDiscount || 0);
-      const dueAmt  = (bill.payments || [])
+      const dueAmt = (bill.payments || [])
         .filter(p => p.paymentMethod === 'CREDIT')
         .reduce((s, p) => s + Number(p.amount || 0), 0);
 
       const row = {
-        'Bill #':       bill.billNumber  || '',
-        'Order #':      bill.orderNumber || '',
-        'Date':         fmtDateTime(bill.createdAt),
-        'Customer':     bill.customerName || '',
+        'Bill #': bill.billNumber || '',
+        'Order #': bill.orderNumber || '',
+        'Date': fmtD(bill.createdAt),
+        'Customer': bill.customerName || '',
         'Payment Mode': primaryPayment(bill),
-        'Total':        Number(bill.totalAmount || 0).toFixed(2),
-        'Status':       bill.billStatus || '',
+        'Total': Number(bill.totalAmount || 0).toFixed(2),
+        'Status': bill.billStatus || '',
       };
 
-      if (subTab === 'discount') row['Discount']   = discAmt.toFixed(2);
-      if (subTab === 'due')      row['Due Amount'] = dueAmt.toFixed(2);
+      if (subTab === 'discount') row['Discount'] = discAmt.toFixed(2);
+      if (subTab === 'due') row['Due Amount'] = dueAmt.toFixed(2);
 
       return row;
     });
@@ -86,6 +86,7 @@ export default function BillsTab({ from, to }) {
   return (
     <div className={styles.tabContent}>
 
+      {/* Summary KPIs */}
       <div className={styles.kpiGrid}>
         <div className={`${styles.kpiCard} ${styles.kpi_accent}`}>
           <div className={styles.kpiIcon}>🧾</div>
@@ -109,6 +110,7 @@ export default function BillsTab({ from, to }) {
         </div>
       </div>
 
+      {/* Sub tabs */}
       <div className={styles.subTabsRow}>
         <div className={styles.subTabs}>
           {SUB_TABS.map(t => (
@@ -117,9 +119,12 @@ export default function BillsTab({ from, to }) {
               onClick={() => setSubTab(t.key)}>
               {t.label}
               <span className={styles.subTabCount}>{
-                t.key === 'all'      ? bills.length :
-                t.key === 'discount' ? bills.filter(b => Number(b.orderDiscount) > 0 || Number(b.itemDiscount) > 0).length :
-                bills.filter(b => (b.payments || []).some(p => p.paymentMethod === 'CREDIT')).length
+                t.key === 'all' ? bills.length :
+                  t.key === 'discount' ? bills.filter(b => Number(b.orderDiscount) > 0 || Number(b.itemDiscount) > 0).length :
+                    bills.filter(b =>
+                      b.billStatus === 'CREDIT_DUE' ||
+                      b.billStatus === 'PARTIAL_CREDIT' ||
+                      (b.payments || []).some(p => p.paymentMethod === 'CREDIT')).length
               }</span>
             </button>
           ))}
@@ -127,6 +132,7 @@ export default function BillsTab({ from, to }) {
         <button className={styles.csvBtn} onClick={handleDownloadCsv}>⬇ CSV</button>
       </div>
 
+      {/* Bills table */}
       {filtered.length === 0 ? (
         <div className={styles.empty}>No bills for this filter</div>
       ) : (
@@ -140,31 +146,32 @@ export default function BillsTab({ from, to }) {
                   <th>Date</th>
                   <th>Customer</th>
                   {subTab === 'discount' && <th>Discount</th>}
-                  {subTab === 'due'      && <th>Due Amount</th>}
+                  {subTab === 'due' && <th>Due Amount</th>}
                   <th>Total</th>
                   <th>Status</th>
-                  <th></th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map(bill => {
-                  const dueAmt  = (bill.payments || [])
+                  const dueAmt = (bill.payments || [])
                     .filter(p => p.paymentMethod === 'CREDIT')
                     .reduce((s, p) => s + Number(p.amount || 0), 0);
                   const discAmt = Number(bill.orderDiscount || 0) + Number(bill.itemDiscount || 0);
-                  const color   = STATUS_COLORS[bill.billStatus] || 'amber';
+                  const color = STATUS_COLORS[bill.billStatus] || 'amber';
                   return (
                     <tr key={bill.id}>
                       <td className={styles.monoCell}>{bill.billNumber}</td>
                       <td className={styles.monoCell}>{bill.orderNumber}</td>
-                      <td>{fmtDateTime(bill.createdAt)}</td>
+                      <td>{fmtD(bill.createdAt)}</td>
                       <td>{bill.customerName || '—'}</td>
                       {subTab === 'discount' && <td className={styles.discountCell}>{fmtC(discAmt)}</td>}
-                      {subTab === 'due'      && <td className={styles.dueCell}>{fmtC(dueAmt)}</td>}
+                      {subTab === 'due' && <td className={styles.dueCell}>{fmtC(dueAmt)}</td>}
                       <td className={styles.numCell}>{fmtC(bill.totalAmount)}</td>
                       <td>
                         <span className={`${styles.statusBadge} ${styles['status_' + color]}`}>
-                          {bill.billStatus}
+                          {bill.billStatus === 'CREDIT_DUE' ? 'CREDIT DUE' :
+                            bill.billStatus === 'PARTIAL_CREDIT' ? 'PARTIAL' :
+                              bill.billStatus}
                         </span>
                       </td>
                       <td>
